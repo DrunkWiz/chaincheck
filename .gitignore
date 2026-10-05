@@ -6,3 +6,6 @@ __pycache__/
 *.sqlite3
 node_modules/
 frontend/dist/
+
+# Devpost submission drafts (write-up, video script, screenshots): local only
+submission/
