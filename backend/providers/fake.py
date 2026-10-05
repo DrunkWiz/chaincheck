@@ -25,10 +25,19 @@ class FakeProvider:
       - an exception instance, raised for every call
     """
 
-    def __init__(self, script, name="fake"):
+    def __init__(self, script, name="fake", transcript=None):
         self.script = script
         self.name = name
+        self.transcript = transcript  # returned by read_images
         self.calls = []
+
+    def read_images(self, images):
+        self.calls.append(("images", len(images)))
+        if isinstance(self.script, BaseException):
+            raise self.script
+        if self.transcript is None:
+            raise ProviderError("fake: no scripted transcript")
+        return self.transcript
 
     def complete(self, system, user):
         offer = unwrap(user)

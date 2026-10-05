@@ -1,0 +1,16 @@
+{
+  "snapshot_date": "2026-10-05",
+  "source": "DEMO: invented firms for the ChainCheck demo. NOT MAS data. Replace with a real snapshot via scripts/snapshot_mas.py.",
+  "institutions": [
+    {"name": "Harbourview Securities Pte. Ltd.", "licence": "Capital Markets Services Licence",
+     "websites": ["harbourview-securities.example"], "phones": ["+6560000101"], "email_domains": ["harbourview-securities.example"]},
+    {"name": "Merlion Crest Capital Pte. Ltd.", "licence": "Capital Markets Services Licence",
+     "websites": ["merlioncrestcapital.example"], "phones": ["+6560000202"], "email_domains": ["merlioncrestcapital.example"]},
+    {"name": "Kallang Wealth Partners Pte. Ltd.", "licence": "Financial Adviser's Licence",
+     "websites": ["kallangwealth.example"], "phones": ["+6560000303"], "email_domains": ["kallangwealth.example"]},
+    {"name": "Straits Harbour Bank Limited", "licence": "Full Bank",
+     "websites": ["straitsharbourbank.example"], "phones": ["+6560000404"], "email_domains": ["straitsharbourbank.example"]},
+    {"name": "Tanjong Robo Invest Pte. Ltd.", "licence": "Capital Markets Services Licence",
+     "websites": ["tanjongrobo.example"], "phones": ["+6560000505"], "email_domains": ["tanjongrobo.example"]}
+  ]
+}

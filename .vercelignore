@@ -1,0 +1,4 @@
+.venv
+tests
+frontend/node_modules
+*.sqlite3

@@ -1,0 +1,18 @@
+{
+ "snapshot_date": "2026-10-05",
+ "source": "FIXTURE: invented entries, not MAS data",
+ "entries": [
+  {
+   "name": "QuantEdge AI"
+  },
+  {
+   "name": "AlphaGain Pro"
+  },
+  {
+   "name": "Orchid Prime Markets"
+  },
+  {
+   "name": "Zenith Bull Capital"
+  }
+ ]
+}

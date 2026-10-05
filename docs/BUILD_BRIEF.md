@@ -168,7 +168,10 @@ withdrawal tax, unlock fee or percentage withdrawal fee is.
 | App | `source = link` (not an app store) | Red |
 | Any entity | Appears in approved community reports | Red: "seen in N reports" |
 | Message | Embedding similarity ≥ 0.90 to an approved report | Red: "matches N reports" |
-| Concerns | From the model | Amber, reason shown |
+| Concerns | From the model | Amber, reason shown (withheld if it contains safe/verified/legit/genuine) |
+| Events | Withdrawal blocked, trading target before withdrawal, account "frozen" (added 5 Oct) | Red |
+| Events | Offer to recover lost money (added 5 Oct) | Red |
+| Message | Instructions aimed at an AI ("ignore your instructions", fake markers) (added 5 Oct) | Red |
 
 **Data:** MAS lists are **dated snapshots** in `data/`, never presented as live.
 Check MAS's site terms before scraping; downloading and committing a snapshot
@@ -244,9 +247,10 @@ built from the patterns in the CNA cases. Say "synthetic" on screen and in the R
 |---|---|---|
 | Front end | React + Vite, one column, inline SVG for chain map and chart | Same as Voucher Kaki |
 | Back end | Python, stdlib HTTP or FastAPI, one `/analyze` endpoint plus report endpoints | Keep runtime dependencies minimal |
-| Model | Gemini 3.5 Flash behind a `Provider` interface with a fallback rung | Pattern from Voucher Kaki |
+| Model | Gemini 3.5 Flash behind a `Provider` interface with a fallback rung | **Decided 5 Oct:** Gemini over its REST API (stdlib), primary + fallback model from env; if both fail, code-only extraction and the result says so. Use a paid-tier key: free-tier prompts may be used by Google to improve its products |
 | Data | Dated JSON snapshots in `data/` | Snapshot date shown in the UI |
-| Database | SQLite locally | **Decide on day 1:** Vercel's serverless filesystem doesn't persist writes, so community reports need a hosted database (a hosted SQLite-compatible service, or Postgres) or a backend host with a persistent volume |
+| Database | SQLite locally | **Decided 5 Oct:** Turso (hosted SQLite) in production over its HTTP API with the stdlib; SQLite locally and in tests. Same SQL. Backup plan: Neon Postgres behind the same `db.py` interface |
+| Back end host | Vercel Python function | **Decided 5 Oct:** stdlib `BaseHTTPRequestHandler` in `api/index.py`, no framework |
 | Hosting | Vercel for the front end | Every env var goes in the Vercel dashboard, not just `.env` |
 
 **Suggested layout**
@@ -398,6 +402,28 @@ the wallet."
 ## 19. Open questions
 
 - [ ] Solo or team?
-- [ ] Final name: ChainCheck or Check Kaki
-- [ ] Gemini (free tier) or Bedrock (already set up for Threshold)
-- [ ] Hosted database choice (§11)
+- [x] Final name: ChainCheck (decided 5 Oct)
+- [x] Gemini, paid tier (decided 5 Oct, §11)
+- [x] Hosted database: Turso (decided 5 Oct, §11)
+
+## 20. Build status (5 Oct)
+
+Built: everything marked Must in §13, plus the guided form and "Send to family" (Web Share or copy;
+no stored share link, so nothing is kept unless the user shares a story).
+
+Not built:
+- **Script similarity (embeddings).** Cut, first in the cut order after the stretch items. Needs an
+  embedding model and tuning.
+- **Fine print scan.** Not defined well enough to build; cut.
+- **Stored share link.** Replaced by Web Share / copy, which keeps nothing.
+- Stretch items (Chinese, wallet check, website fingerprinting).
+- **41.4% stat on the landing page.** Left off until its original source is confirmed (§2).
+
+Needs Nathan:
+- Real MAS snapshots: check MAS site terms, download by hand, run `scripts/snapshot_mas.py`.
+- Turso database + token, Gemini paid key, `PHONE_HMAC_SECRET`, `ADMIN_TOKEN`: in `.env` and Vercel.
+- Confirm exact Gemini model IDs.
+- A real accuracy set written by someone other than the rule author (§12). The invented set in
+  `tests/fixtures/accuracy_set/` is a regression guard, not a figure to quote.
+- Decide whether claimed titles, licensed names without contact details, and promo sites off the MAS
+  record should stay amber/red: they cause most false alarms on legitimate promotions.

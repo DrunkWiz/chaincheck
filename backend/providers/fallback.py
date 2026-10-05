@@ -17,10 +17,16 @@ class FallbackProvider:
         self.last_used = None
 
     def complete(self, system, user):
+        return self._first(lambda provider: provider.complete(system, user))
+
+    def read_images(self, images):
+        return self._first(lambda provider: provider.read_images(images))
+
+    def _first(self, call):
         errors = []
         for provider in self.providers:
             try:
-                reply = provider.complete(system, user)
+                reply = call(provider)
             except ProviderError as exc:
                 errors.append(f"{provider.name}: {exc}")
                 continue
