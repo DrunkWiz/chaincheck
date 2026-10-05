@@ -1,0 +1,20 @@
+{
+  "snapshot_date": "2026-10-01",
+  "source": "FIXTURE: invented firms, not MAS data",
+  "institutions": [
+    {
+      "name": "Harbourview Securities Pte. Ltd.",
+      "licence": "Capital Markets Services Licence",
+      "websites": ["harbourview-securities.example"],
+      "phones": ["+6560000101"],
+      "email_domains": ["harbourview-securities.example"]
+    },
+    {
+      "name": "Merlion Crest Capital Pte. Ltd.",
+      "licence": "Capital Markets Services Licence",
+      "websites": ["merlioncrestcapital.example"],
+      "phones": ["+6560000202"],
+      "email_domains": ["merlioncrestcapital.example"]
+    }
+  ]
+}

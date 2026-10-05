@@ -1,0 +1,18 @@
+{
+  "people": [],
+  "companies": ["Harbourview Securities Pte. Ltd."],
+  "apps": [{"name": "Harbourview Invest", "source": "app_store"}],
+  "domains": ["harbourview-securities.example"],
+  "phones": ["+65 6000 0101"],
+  "emails": [],
+  "accounts": [],
+  "wallets": [],
+  "returns": [{"percent": 6, "period": "year", "quote": "returned 6% a year on average over the past ten years"}],
+  "fees": [],
+  "payment": [
+    {"method": "paynow", "quote": "Fund your account by PayNow"},
+    {"method": "bank_transfer", "quote": "or bank transfer from a bank account in your own name"}
+  ],
+  "events": [],
+  "concerns": []
+}

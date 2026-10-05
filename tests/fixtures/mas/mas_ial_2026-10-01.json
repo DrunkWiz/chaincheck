@@ -1,0 +1,7 @@
+{
+  "snapshot_date": "2026-10-01",
+  "source": "FIXTURE: invented entries, not MAS data",
+  "entries": [
+    {"name": "QuantEdge AI", "websites": ["quantedge-ai.example"]}
+  ]
+}

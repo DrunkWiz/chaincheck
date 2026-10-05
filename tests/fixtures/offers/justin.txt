@@ -1,0 +1,7 @@
+[MOCK — invented messages, modelled on reported scam patterns]
+
+Saw a Facebook ad where a famous investor shared his "secret AI method". Clicked through and joined their Telegram group.
+In the group, Prof. Marcus Vell (AI quantitative trading professor) posts signals every day and members post screenshots of their profits.
+The professor invited me to the private beta of the QuantEdge AI app. It isn't on the App Store, you install it from https://quantedge-ai.example/download.
+Deposited $500 by bank transfer, the app showed 2% per day, and I withdrew $120 which reached my account.
+Now the assistant says to top up $20,000 in USDT to this new wallet for the VIP tier: 0x7a3f9c2e4b1d8a6f0e5c7b9d2a4f6e8c1b3dc91e
