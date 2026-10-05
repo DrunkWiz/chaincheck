@@ -9,7 +9,7 @@ import mimetypes
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, urlencode, urlsplit
 
 from backend.api import App
 
@@ -24,14 +24,27 @@ def app():
     return _app
 
 
+def resolve(raw_path):
+    """(path, query) for a request. On Vercel, vercel.json rewrites /api/<route>
+    to /api/index?__route=<route>; this works whether or not Vercel keeps the
+    original path."""
+    url = urlsplit(raw_path)
+    params = [(k, v) for k, v in parse_qsl(url.query, keep_blank_values=True)]
+    route = next((v for k, v in params if k == "__route"), None)
+    query = urlencode([(k, v) for k, v in params if k != "__route"])
+    if route is not None and url.path in ("/api", "/api/index"):
+        return "/api/" + route.lstrip("/"), query
+    return url.path, query
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "ChainCheck"
 
     def _api(self, method):
-        url = urlsplit(self.path)
+        path, query = resolve(self.path)
         length = int(self.headers.get("Content-Length") or 0)
         body = self.rfile.read(length) if length else b""
-        status, payload = app().handle(method, url.path, url.query, body, dict(self.headers))
+        status, payload = app().handle(method, path, query, body, dict(self.headers))
         data = json.dumps(payload).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json")

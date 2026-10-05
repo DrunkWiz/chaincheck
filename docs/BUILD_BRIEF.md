@@ -417,12 +417,12 @@ Not built:
 - **Fine print scan.** Not defined well enough to build; cut.
 - **Stored share link.** Replaced by Web Share / copy, which keeps nothing.
 - Stretch items (Chinese, wallet check, website fingerprinting).
-- **41.4% stat on the landing page.** Left off until its original source is confirmed (§2).
+- ~~41.4% stat~~ Confirmed 6 Oct: SPF mid-year scam and cybercrime brief (Aug 2026), investment scams $169.8M of $410.6M total losses in Jan-Jun 2026 = 41.4%. Found via AsiaOne's report; on the landing page with the source. Glance at the SPF original before submitting.
 
 Needs Nathan:
 - Real MAS snapshots: check MAS site terms, download by hand, run `scripts/snapshot_mas.py`.
 - Turso database + token, Gemini paid key, `PHONE_HMAC_SECRET`, `ADMIN_TOKEN`: in `.env` and Vercel.
-- Confirm exact Gemini model IDs.
+- ~~Confirm Gemini model IDs~~ Checked 6 Oct: gemini-3.5-flash (legacy, stable), fallback gemini-3.5-flash-lite; 2.5 is closed to new projects.
 - A real accuracy set written by someone other than the rule author (§12). The invented set in
   `tests/fixtures/accuracy_set/` is a regression guard, not a figure to quote.
 - Decide whether claimed titles, licensed names without contact details, and promo sites off the MAS

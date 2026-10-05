@@ -140,7 +140,7 @@ def _arg(value):
     if isinstance(value, int):
         return {"type": "integer", "value": str(value)}
     if isinstance(value, float):
-        return {"type": "float", "value": value}
+        return {"type": "float", "value": repr(value)}  # Turso wants numbers as strings
     if isinstance(value, bytes):
         return {"type": "blob", "base64": base64.b64encode(value).decode()}
     return {"type": "text", "value": str(value)}

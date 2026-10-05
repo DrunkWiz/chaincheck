@@ -266,6 +266,22 @@ function Landing() {
 
       <section>
         <div className="wrap wide">
+          <div className="card">
+            <div className="stat">41.4%</div>
+            <p style={{ fontSize: "1.2rem", fontWeight: 700, marginTop: 10 }}>
+              of Singapore's scam losses in the first half of 2026 were investment scams: $169.8 million of
+              $410.6 million.
+            </p>
+            <p className="small muted" style={{ margin: 0 }}>
+              Source: Singapore Police Force, mid-year scam and cybercrime brief, August 2026. Share calculated
+              by ChainCheck from the two totals.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div className="wrap wide">
           <h2>Six warning signs</h2>
           <ol className="signs">
             {SIGNS.map(([t, d]) => <li key={t}><strong>{t}.</strong> {d}</li>)}

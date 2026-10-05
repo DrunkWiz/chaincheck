@@ -108,7 +108,8 @@ written by someone else and modelled on real cases and real licensed-firm promot
 `vercel.json` builds the front end and routes `/api/*` to `api/index.py` (stdlib, no framework).
 Set **every** variable from `.env.example` in the Vercel dashboard. Community reports need Turso
 (`TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`) because Vercel's filesystem doesn't keep writes; seed it
-once by running `scripts.seed_reports` locally with those variables set. The Vercel config is
+once by running `scripts.seed_reports` locally with those variables set. Checked against Vercel's docs (6 Oct): `api/index.py` exposes a `handler` class, which Vercel's
+Python runtime supports; the rewrite passes the route as `__route` so routing works either way. Still
 untested until the first deploy.
 
 ## Layout

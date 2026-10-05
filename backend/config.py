@@ -75,9 +75,10 @@ MAX_ANSWER_CHARS = 120
 
 # --- Model ------------------------------------------------------------------------
 # Model IDs come from env (GEMINI_MODEL, GEMINI_FALLBACK_MODEL); these are
-# defaults. Confirm the exact IDs in Google's model list before deploying.
+# defaults. Checked against Google's model list on 6 Oct 2026: 3.5 Flash is
+# "legacy" but stable; 2.5 Flash is closed to new projects.
 GEMINI_MODEL_DEFAULT = "gemini-3.5-flash"
-GEMINI_FALLBACK_MODEL_DEFAULT = "gemini-2.5-flash"
+GEMINI_FALLBACK_MODEL_DEFAULT = "gemini-3.5-flash-lite"
 MODEL_TIMEOUT_SECONDS = 25
 RDAP_TIMEOUT_SECONDS = 5
 EXTRACTION_CACHE_SIZE = 256
