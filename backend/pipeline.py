@@ -14,11 +14,7 @@ from backend.checks import Context, domain, mas, network, payment, people, retur
 from backend.extract import cached_extract
 from backend.flags import AMBER, RED
 from backend.providers.base import ProviderError
-from backend.redact import scrub_display
-
-
-class ScreenshotUnavailable(Exception):
-    """Screenshots need the model, and no provider answered."""
+from backend.redact import for_model, scrub_display
 
 
 @dataclass
@@ -36,7 +32,6 @@ class Result:
     degraded: bool
     data: dict
     entities: dict = field(repr=False, default_factory=dict)
-    transcript: str = ""
 
     @property
     def incomplete(self):
@@ -64,26 +59,16 @@ def make_context(today=None, rdap=None, network_lookup=None, fid=None, ial=None,
     )
 
 
-def analyze(offer_text, provider, ctx=None, images=None, answers=None):
+def analyze(offer_text, provider, ctx=None, answers=None):
     ctx = ctx or make_context()
     text = (offer_text or "").strip()
     degraded = provider is None
-
-    transcript = ""
-    if images:
-        if provider is None:
-            raise ScreenshotUnavailable("no model provider configured")
-        try:
-            transcript = provider.read_images(images).strip()
-        except ProviderError as exc:
-            raise ScreenshotUnavailable(str(exc)) from None
-        text = f"{text}\n\n{transcript}".strip()
 
     code_entities, injection = code_extract.extract(text, ctx.fid.firms + ctx.ial.firms)
     model_entities = schema.empty_entities()
     if provider is not None and text:
         try:
-            model_entities = cached_extract(text, provider).entities
+            model_entities = cached_extract(for_model(text), provider).entities
         except ProviderError:
             degraded = True
 
@@ -105,7 +90,7 @@ def analyze(offer_text, provider, ctx=None, images=None, answers=None):
         next_steps=decided["next_steps"], degraded=degraded,
         data={"fid": ctx.fid.label, "ial": ctx.ial.label, "demo": ctx.fid.demo or ctx.ial.demo,
               "checked_on": ctx.today.isoformat()},
-        entities=entities, transcript=transcript,
+        entities=entities,
     )
 
 

@@ -1,10 +1,11 @@
 import { useRef, useState } from "react";
-import { api, fileToBase64 } from "../api.js";
+import { api } from "../api.js";
+import { readScreenshots } from "../ocr.js";
 import { EXAMPLES } from "../examples.js";
 import Results from "../components/Results.jsx";
 
 const MAX_FILES = 4;
-const MAX_BYTES = 4_000_000;
+const MAX_BYTES = 10_000_000;
 const TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 const GUIDED_PAY = [
@@ -66,7 +67,7 @@ function GuidedForm({ onSubmit, busy }) {
 export default function Check() {
   const [mode, setMode] = useState("paste");
   const [text, setText] = useState("");
-  const [files, setFiles] = useState([]);
+  const [reading, setReading] = useState(null); // OCR progress, or null
   const [answers, setAnswers] = useState({});
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -91,13 +92,12 @@ export default function Check() {
 
   async function onSubmit(e) {
     e.preventDefault();
-    if (!text.trim() && !files.length) {
+    if (!text.trim()) {
       setError("Paste the offer or add a screenshot first.");
       return;
     }
-    const images = await Promise.all(files.map(async (f) => ({ mime: f.type, data: await fileToBase64(f) })));
     setAnswers({});
-    run({ text, images, answers: {} });
+    run({ text, answers: {} });
   }
 
   function onAnswer(id, value) {
@@ -106,17 +106,37 @@ export default function Check() {
     run({ ...lastRequest.current, answers: next });
   }
 
-  function onFiles(e) {
-    const picked = [...e.target.files];
+  async function onFiles(e) {
+    const picked = [...e.target.files].slice(0, MAX_FILES);
     e.target.value = "";
-    const bad = picked.find((f) => !TYPES.includes(f.type) || f.size > MAX_BYTES);
-    if (bad) {
-      setError("Screenshots must be PNG, JPEG or WebP, each under 4 MB.");
+    if (!picked.length) return;
+    if (picked.some((f) => !TYPES.includes(f.type) || f.size > MAX_BYTES)) {
+      setError("Screenshots must be PNG, JPEG or WebP, each under 10 MB.");
       return;
     }
     setError("");
-    setFiles((current) => [...current, ...picked].slice(0, MAX_FILES));
+    setReading({ index: 0, total: picked.length, stage: "loading", percent: null });
+    try {
+      const texts = await readScreenshots(picked, setReading);
+      const found = texts.map((t, i) => (t ? `[From screenshot: ${picked[i].name}]\n${t}` : "")).filter(Boolean);
+      if (!found.length) {
+        setError("We couldn't find any text in that screenshot. Try a clearer one, or paste the text instead.");
+        return;
+      }
+      setText((current) => [current.trim(), ...found].filter(Boolean).join("\n\n").slice(0, 20000));
+      if (found.length < texts.length) {
+        setError("We couldn't find text in some screenshots. The rest has been added.");
+      }
+    } catch {
+      setError("Couldn't load the screenshot reader. Check your connection, or paste the text instead.");
+    } finally {
+      setReading(null);
+    }
   }
+
+  const readingText = reading && (reading.stage === "loading"
+    ? `Getting the screenshot reader ready${reading.percent != null ? ` (${reading.percent}%)` : ""}… The first time takes a moment.`
+    : `Reading screenshot ${reading.index + 1} of ${reading.total}… ${reading.percent}%`);
 
   return (
     <>
@@ -143,39 +163,35 @@ export default function Check() {
                 <textarea id="offer" value={text} onChange={(e) => setText(e.target.value)} maxLength={20000}
                   placeholder="Paste the chat, ad or message here. Include names, links, numbers and how they want you to pay." />
                 <div className="upload">
-                  <label className="btn quiet" htmlFor="shots">
+                  <label className={`btn quiet${reading ? " disabled" : ""}`} htmlFor="shots" aria-disabled={!!reading}>
                     Add screenshots
-                    <input id="shots" type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={onFiles} />
+                    <input id="shots" type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={onFiles}
+                      disabled={!!reading} />
                   </label>
-                  <span className="small muted">Up to 4 images. We read the text out of them.</span>
+                  <span className="small muted">
+                    Up to 4 at a time. They're read on your device and never uploaded. The text appears in the box
+                    above, so you can remove anything personal before you check.
+                  </span>
                 </div>
-                {files.length > 0 && (
-                  <div className="file-list" style={{ marginBottom: 12 }}>
-                    {files.map((f, i) => (
-                      <span className="file-pill" key={`${f.name}-${i}`}>
-                        {f.name}
-                        <button type="button" aria-label={`Remove ${f.name}`}
-                          onClick={() => setFiles(files.filter((_, j) => j !== i))}>×</button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <button className="btn" disabled={busy}>{busy ? "Checking…" : "Check this offer"}</button>
+                <p role="status" aria-live="polite" className="small" style={{ minHeight: 24, margin: "0 0 10px" }}>
+                  {readingText}
+                </p>
+                <button className="btn" disabled={busy || !!reading}>{busy ? "Checking…" : "Check this offer"}</button>
                 <div className="examples">
                   <span className="small muted">Try an invented example:</span>
                   {EXAMPLES.map((ex) => (
-                    <button key={ex.id} type="button" className="btn quiet" onClick={() => { setText(ex.text); setFiles([]); }}>
+                    <button key={ex.id} type="button" className="btn quiet" onClick={() => setText(ex.text)}>
                       {ex.label}
                     </button>
                   ))}
                 </div>
               </form>
             ) : (
-              <GuidedForm busy={busy} onSubmit={(t, a) => { setAnswers(a); run({ text: t, images: [], answers: a }); }} />
+              <GuidedForm busy={busy} onSubmit={(t, a) => { setAnswers(a); run({ text: t, answers: a }); }} />
             )}
             {error && <p className="error" role="alert" style={{ marginTop: 14 }}>{error}</p>}
             <p className="small muted" style={{ marginTop: 14, marginBottom: 0 }}>
-              We don't store what you check. Only stories you choose to share are kept, after review.
+              We don't store what you check. To read it, we send the text (never your screenshots) to Google's Gemini AI, with phone numbers, emails, NRIC and account numbers removed first. Google may use what it receives to improve its products. Only stories you choose to share are kept, after review.
             </p>
           </div>
 

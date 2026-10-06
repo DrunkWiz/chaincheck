@@ -60,7 +60,7 @@ section { padding: 40px 0; }
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;
 }
 .btn:hover { filter: brightness(1.08); }
-.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn:disabled, .btn.disabled { opacity: 0.55; cursor: not-allowed; }
 .btn.secondary { background: var(--surface); color: var(--accent); }
 .btn.quiet { background: transparent; border-color: var(--line); color: var(--ink); }
 .btn.stop { background: var(--stop); border-color: var(--stop); }
@@ -91,7 +91,9 @@ label.field { display: block; font-weight: 700; margin-bottom: 6px; }
 .hero { padding-top: 36px; }
 .checker { background: var(--surface); border: 2px solid var(--ink); border-radius: 18px; padding: 18px; box-shadow: 6px 6px 0 var(--ink); }
 .upload { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
+.upload label { position: relative; }
 .upload input[type="file"] { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.upload label:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
 .file-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .file-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 4px 4px 12px; background: var(--accent-soft); border-radius: 999px; font-size: 16px; }
 .file-pill button { min-height: 40px; min-width: 40px; border: 0; background: transparent; font-size: 20px; cursor: pointer; border-radius: 999px; }

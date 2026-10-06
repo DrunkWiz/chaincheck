@@ -1,26 +1,75 @@
 {
   "people": [
-    {"name": "Serene Lau", "claimed_title": "Personal account manager, Merlion Crest Capital"},
-    {"name": "Victor Hale", "claimed_title": "Senior analyst"}
+    {
+      "name": "Serene Lau",
+      "claimed_title": "Personal account manager, Merlion Crest Capital"
+    },
+    {
+      "name": "Victor Hale",
+      "claimed_title": "Senior analyst"
+    }
   ],
-  "companies": ["Merlion Crest Capital Pte Ltd"],
+  "companies": [
+    "Merlion Crest Capital Pte Ltd"
+  ],
   "apps": [],
-  "domains": ["merlioncrest-capital.example"],
-  "phones": ["+65 8000 4321"],
+  "domains": [
+    "merlioncrest-capital.example"
+  ],
+  "phones": [],
   "emails": [],
   "accounts": [],
   "wallets": [],
-  "returns": [{"percent": 32, "period": "month", "quote": "earned 32% per month last quarter"}],
-  "fees": [{"type": "withdrawal_tax", "percent": 15, "amount": null, "quote": "you must pay the 15% withdrawal tax"}],
-  "payment": [{"method": "cash_handover", "quote": "our courier will collect cash from you at Tampines MRT"}],
+  "returns": [
+    {
+      "percent": 32,
+      "period": "month",
+      "quote": "earned 32% per month last quarter"
+    }
+  ],
+  "fees": [
+    {
+      "type": "withdrawal_tax",
+      "percent": 15,
+      "amount": null,
+      "quote": "you must pay the 15% withdrawal tax"
+    }
+  ],
+  "payment": [
+    {
+      "method": "cash_handover",
+      "quote": "our courier will collect cash from you at Tampines MRT"
+    }
+  ],
   "events": [
-    {"signal": "account_manager", "quote": "I am your personal account manager"},
-    {"signal": "group_invite", "quote": "our VIP WhatsApp group"},
-    {"signal": "stock_picks", "quote": "shares stock picks in our VIP WhatsApp group every day"},
-    {"signal": "withdrawal_succeeded", "quote": "You already withdrew your $800 profit successfully"},
-    {"signal": "institutional_programme", "quote": "To join the institutional programme the minimum is $50,000"},
-    {"signal": "cash_requested", "quote": "our courier will collect cash from you"},
-    {"signal": "withdrawal_tax_demanded", "quote": "before you can withdraw your balance you must pay the 15% withdrawal tax"}
+    {
+      "signal": "account_manager",
+      "quote": "I am your personal account manager"
+    },
+    {
+      "signal": "group_invite",
+      "quote": "our VIP WhatsApp group"
+    },
+    {
+      "signal": "stock_picks",
+      "quote": "shares stock picks in our VIP WhatsApp group every day"
+    },
+    {
+      "signal": "withdrawal_succeeded",
+      "quote": "You already withdrew your $800 profit successfully"
+    },
+    {
+      "signal": "institutional_programme",
+      "quote": "To join the institutional programme the minimum is $50,000"
+    },
+    {
+      "signal": "cash_requested",
+      "quote": "our courier will collect cash from you"
+    },
+    {
+      "signal": "withdrawal_tax_demanded",
+      "quote": "before you can withdraw your balance you must pay the 15% withdrawal tax"
+    }
   ],
   "concerns": []
 }

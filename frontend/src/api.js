@@ -48,12 +48,3 @@ export const OUTCOME_LABELS = {
   still_happening: "Still happening",
   recovered_some: "Recovered some",
 };
-
-export function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(",")[1]);
-    reader.onerror = () => reject(new Error("Couldn't read that file."));
-    reader.readAsDataURL(file);
-  });
-}

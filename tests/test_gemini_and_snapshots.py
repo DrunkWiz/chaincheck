@@ -35,13 +35,6 @@ def test_gemini_request_shape():
     assert body["systemInstruction"]["parts"][0]["text"] == "sys"
 
 
-def test_gemini_images():
-    transport = Transport(OK)
-    GeminiProvider("m", api_key="k", transport=transport).read_images([("image/png", b"abc")])
-    parts = transport.calls[0][2]["contents"][0]["parts"]
-    assert parts[1]["inlineData"] == {"mimeType": "image/png", "data": "YWJj"}
-
-
 @pytest.mark.parametrize("reply", [{}, {"candidates": []}, ProviderError("HTTP 429")])
 def test_gemini_failures_are_provider_errors(reply):
     with pytest.raises(ProviderError):

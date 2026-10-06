@@ -5,7 +5,7 @@ import pytest
 from backend import normalize, playbook, reality, verdict
 from backend.flags import AMBER, RED, Flag
 from backend.followups import apply, clean_answers, questions_for
-from backend.pipeline import ScreenshotUnavailable, analyze
+from backend.pipeline import analyze
 from backend.providers.fake import FakeProvider
 from tests.conftest import entities, load_offer, make_ctx
 
@@ -172,20 +172,6 @@ def test_chain_map(honest_model):
     assert by_kind["domain"]["label"] == "merlioncrest-capital[.]example"
     assert by_kind["phone"]["label"] == "1 phone number (hidden)"
     assert all(n["status_text"] for n in chain)
-
-
-def test_screenshots_are_transcribed_then_checked():
-    provider = FakeProvider(lambda offer: "{}", transcript="Earn 3% per day. Courier will collect cash.")
-    result = analyze("", provider, make_ctx(), images=[("image/png", b"png")])
-    assert result.verdict == verdict.STOP
-    assert result.transcript.startswith("Earn")
-
-
-def test_screenshots_without_model_raise():
-    with pytest.raises(ScreenshotUnavailable):
-        analyze("", None, make_ctx(), images=[("image/png", b"png")])
-    with pytest.raises(ScreenshotUnavailable):
-        analyze("", FakeProvider.failing(), make_ctx(), images=[("image/png", b"png")])
 
 
 def test_evidence_summary(honest_model):

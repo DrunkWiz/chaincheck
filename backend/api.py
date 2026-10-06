@@ -4,8 +4,6 @@
 `backend/server.py` serves it locally; `api/index.py` serves it on Vercel.
 """
 
-import base64
-import binascii
 import hmac
 import json
 import os
@@ -15,8 +13,6 @@ from urllib.parse import parse_qs
 
 from backend import community, config, db as database, normalize, pipeline, snapshots
 from backend.providers.base import ProviderError
-
-IMAGE_TYPES = ("image/png", "image/jpeg", "image/webp")
 
 
 class HttpError(Exception):
@@ -90,17 +86,14 @@ class App:
             raise HttpError(400, "Text must be a string.")
         if len(text) > config.MAX_TEXT_CHARS:
             raise HttpError(400, f"Please paste under {config.MAX_TEXT_CHARS:,} characters.")
-        images = _images(data.get("images") or [])
-        if not text.strip() and not images:
+        if data.get("images"):
+            # Screenshots are read on the user's device; images never reach the server.
+            raise HttpError(400, "Send the text only. Screenshots are read in your browser.")
+        if not text.strip():
             raise HttpError(400, "Paste the offer or add a screenshot first.")
-        try:
-            result = pipeline.analyze(text, self.provider_factory(), self.context(), images=images,
-                                      answers=data.get("answers") or {})
-        except pipeline.ScreenshotUnavailable:
-            raise HttpError(503, "We can't read screenshots right now. Please paste the text instead.") from None
-        out = result.to_dict()
-        out["transcript"] = result.transcript
-        return out
+        result = pipeline.analyze(text, self.provider_factory(), self.context(),
+                                  answers=data.get("answers") or {})
+        return result.to_dict()
 
     def reports(self, params, **_):
         return {"reports": community.list_reports(self.db, params.get("q", ""), params.get("type", "")),
@@ -161,23 +154,6 @@ def _json(body):
     if not isinstance(data, dict):
         raise HttpError(400, "Body must be a JSON object.")
     return data
-
-
-def _images(items):
-    if not isinstance(items, list) or len(items) > config.MAX_IMAGES:
-        raise HttpError(400, f"Add up to {config.MAX_IMAGES} screenshots.")
-    images = []
-    for item in items:
-        if not isinstance(item, dict) or item.get("mime") not in IMAGE_TYPES:
-            raise HttpError(400, "Screenshots must be PNG, JPEG or WebP.")
-        try:
-            data = base64.b64decode(item.get("data", ""), validate=True)
-        except (binascii.Error, ValueError, TypeError):
-            raise HttpError(400, "A screenshot couldn't be read.") from None
-        if not data or len(data) > config.MAX_IMAGE_BYTES:
-            raise HttpError(400, "Each screenshot must be under 4 MB.")
-        images.append((item["mime"], data))
-    return images
 
 
 def _default_provider():

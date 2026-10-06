@@ -3,8 +3,8 @@
 From nothing to a live ChainCheck on Vercel with Turso. Takes about 30 minutes.
 Commands are for PowerShell on Windows; bash equivalents are noted where they differ.
 
-**Before you start you need:** a Vercel account, a Turso account, a Google AI Studio account with
-billing enabled, and Node + Python installed (see the README).
+**Before you start you need:** a Vercel account (Hobby, free), a Turso account (free plan), a Google
+AI Studio account (free tier), and Node + Python installed (see the README). Nothing here needs a card.
 
 ---
 
@@ -24,12 +24,25 @@ Run it twice:
 > **`PHONE_HMAC_SECRET` must never change after you seed.** Phone numbers and bank accounts are
 > stored only as HMACs made with it. A different secret means none of them match any more.
 
-## 2. Gemini key (paid tier)
+## 2. Gemini key (free tier)
 
-1. In Google AI Studio, create an API key.
-2. Turn on billing for its project. Free-tier prompts may be used by Google to improve its products
-   and read by human reviewers. Victims paste personal chats, so use the paid tier.
-3. That value is `GEMINI_API_KEY`.
+1. In Google AI Studio, create an API key. No billing is needed.
+2. That value is `GEMINI_API_KEY`.
+
+On the free tier, Google uses what it receives to improve its products, and human reviewers may
+read it. To limit that, ChainCheck removes phone numbers, emails, NRIC/FIN, account numbers and
+"my name is …" from the text before sending it (`redact.for_model`). Code reads those details from
+the original text itself. **Screenshots never reach Gemini or the server:** they're read in the
+browser with Tesseract (OCR), and the text goes into the paste box for the user to review. The page
+tells users their text (not their screenshots) goes to Google. If you later move to a paid key,
+update that notice.
+
+The OCR engine and English data (~15 MB) load from the jsDelivr CDN the first time someone adds a
+screenshot, then stay cached in their browser. Only those static files are downloaded; images are
+never uploaded.
+
+Free-tier rate limits are low. If the model is rate-limited, checks fall back to fixed rules and
+say so on screen. They don't fail.
 
 The model defaults are `gemini-3.5-flash`, with `gemini-3.5-flash-lite` as the fallback. Both were
 checked against Google's model list on 6 Oct 2026.
@@ -159,7 +172,7 @@ Then in a browser:
 - [ ] Home page loads with the demo banner. Run each of the three invented examples.
 - [ ] The copycat example shows a "Seen in 1 scam report" flag. That proves Turso is connected and
       the HMAC secret matches the seed.
-- [ ] Upload a screenshot of an invented offer. Text is read and checked.
+- [ ] Add a screenshot of an invented offer. Its text appears in the box within a few seconds; check it.
 - [ ] Community page shows 12 synthetic reports and a 9-report network alert.
 - [ ] Share a test story. It shows up in `/#/admin` with your `ADMIN_TOKEN`. Reject it.
 - [ ] Phone width (375px): no sideways scrolling on any page.

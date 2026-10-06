@@ -19,9 +19,6 @@ class FallbackProvider:
     def complete(self, system, user):
         return self._first(lambda provider: provider.complete(system, user))
 
-    def read_images(self, images):
-        return self._first(lambda provider: provider.read_images(images))
-
     def _first(self, call):
         errors = []
         for provider in self.providers:

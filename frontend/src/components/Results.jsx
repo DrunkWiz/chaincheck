@@ -86,15 +86,6 @@ export default function Results({ result, onAnswer, busy }) {
       {result.degraded && (
         <p className="notice">Our AI reader wasn't available, so this was checked with fixed rules only. It may miss things.</p>
       )}
-      {result.transcript && (
-        <details className="panel">
-          <summary style={{ minHeight: 48, display: "flex", alignItems: "center", cursor: "pointer", fontWeight: 700 }}>
-            Text we read from your screenshots
-          </summary>
-          <pre className="evidence">{result.transcript}</pre>
-        </details>
-      )}
-
       <FollowUps questions={result.questions} onAnswer={onAnswer} busy={busy} />
 
       {stop && <Stage stage={result.stage} />}

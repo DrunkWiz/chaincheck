@@ -8,6 +8,7 @@ import pytest
 from backend import extract, schema, snapshots
 from backend.checks import Context
 from backend.prompt import neutralise
+from backend.redact import for_model
 from backend.providers.fake import FakeProvider
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -96,7 +97,8 @@ def ctx():
 def honest_model():
     """Fake gateway that replays the expected model output for each fixture offer."""
     script = {
-        neutralise(load_offer(name)).strip("\n"): load_model_output(name)
+        # The model only ever sees redacted text (redact.for_model).
+        neutralise(for_model(load_offer(name))).strip("\n"): load_model_output(name)
         for name in OFFER_NAMES
     }
     return FakeProvider(script, name="fake-honest")

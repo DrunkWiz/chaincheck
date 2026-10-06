@@ -69,7 +69,7 @@ Source video: https://www.youtube.com/watch?v=b0Mn2ZAVEdo
 
 | Step | AI? | What happens |
 |---|---|---|
-| Read text and screenshots | Yes | Extract typed entities (schema in §6) |
+| Read text | Yes | Extract typed entities (schema in §6). Screenshots are OCR'd in the browser (Tesseract), not by the model (changed 6 Oct) |
 | Script similarity | Yes, as a measurement | Embedding similarity to past reports; a fixed threshold in code decides |
 | Concern flags | Yes, one way only | Flags wording no rule covers, as **amber** with a reason |
 | Every check | No | MAS lists, fuzzy match, copycat, domain age, returns, payment, network |
@@ -95,7 +95,7 @@ anything else is discarded.
 
 ## 5. Check pipeline
 
-1. **Input.** Pasted text, or screenshots (model reads the text out), or the
+1. **Input.** Pasted text, or screenshots (read on the device with OCR into the text box; images never leave the browser), or the
    guided form (3 questions).
 2. **Extract** (model) → entities JSON (§6).
 3. **Follow-up questions** (code). If a key field is missing, ask from a fixed
@@ -247,7 +247,7 @@ built from the patterns in the CNA cases. Say "synthetic" on screen and in the R
 |---|---|---|
 | Front end | React + Vite, one column, inline SVG for chain map and chart | Same as Voucher Kaki |
 | Back end | Python, stdlib HTTP or FastAPI, one `/analyze` endpoint plus report endpoints | Keep runtime dependencies minimal |
-| Model | Gemini 3.5 Flash behind a `Provider` interface with a fallback rung | **Decided 5 Oct:** Gemini over its REST API (stdlib), primary + fallback model from env; if both fail, code-only extraction and the result says so. Use a paid-tier key: free-tier prompts may be used by Google to improve its products |
+| Model | Gemini 3.5 Flash behind a `Provider` interface with a fallback rung | **Decided 5 Oct:** Gemini over its REST API (stdlib), primary + fallback model from env; if both fail, code-only extraction and the result says so. Changed 6 Oct to the **free tier** (zero cost): personal numbers, emails and NRIC are removed before text reaches the model; the UI discloses that text goes to Google; screenshots go unredacted, with a crop-first notice |
 | Data | Dated JSON snapshots in `data/` | Snapshot date shown in the UI |
 | Database | SQLite locally | **Decided 5 Oct:** Turso (hosted SQLite) in production over its HTTP API with the stdlib; SQLite locally and in tests. Same SQL. Backup plan: Neon Postgres behind the same `db.py` interface |
 | Back end host | Vercel Python function | **Decided 5 Oct:** stdlib `BaseHTTPRequestHandler` in `api/index.py`, no framework |
@@ -403,7 +403,7 @@ the wallet."
 
 - [ ] Solo or team?
 - [x] Final name: ChainCheck (decided 5 Oct)
-- [x] Gemini, paid tier (decided 5 Oct, §11)
+- [x] Gemini, free tier with redaction (decided 6 Oct, §11)
 - [x] Hosted database: Turso (decided 5 Oct, §11)
 
 ## 20. Build status (5 Oct)
@@ -421,7 +421,7 @@ Not built:
 
 Needs Nathan:
 - Real MAS snapshots: check MAS site terms, download by hand, run `scripts/snapshot_mas.py`.
-- Turso database + token, Gemini paid key, `PHONE_HMAC_SECRET`, `ADMIN_TOKEN`: in `.env` and Vercel.
+- Turso database + token, Gemini key (free tier), `PHONE_HMAC_SECRET`, `ADMIN_TOKEN`: in `.env` and Vercel.
 - ~~Confirm Gemini model IDs~~ Checked 6 Oct: gemini-3.5-flash (legacy, stable), fallback gemini-3.5-flash-lite; 2.5 is closed to new projects.
 - A real accuracy set written by someone other than the rule author (§12). The invented set in
   `tests/fixtures/accuracy_set/` is a regression guard, not a figure to quote.

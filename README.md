@@ -30,8 +30,10 @@ the best possible result is "No red flags found. Verify these yourself before yo
 says safe, verified or legit.
 
 ```
-text / screenshots ─▶ model extraction ─┐
-                   └▶ code extraction ──┴▶ merge ─▶ follow-up answers ─▶ checks ─▶ verdict ─▶ stage, chain map, Reality Check
+screenshots ─▶ OCR in the browser (images never leave the device)
+              │
+text ─▶ redact personal numbers ─▶ model extraction ─┐
+     └───────────────────────────▶ code extraction ──┴▶ merge ─▶ follow-up answers ─▶ checks ─▶ verdict ─▶ stage, chain map, Reality Check
 ```
 
 | Check | Rule (thresholds in `backend/config.py`) |
@@ -79,7 +81,7 @@ Open http://localhost:8000. For front-end work, also run `npm run dev` in `front
 `/api` to port 8000). On macOS/Linux use `.venv/bin/python`.
 
 Without `GEMINI_API_KEY` the checker runs on code-side extraction only and says so on screen;
-screenshot upload needs the key. Copy `.env.example` to `.env` (or export the variables) to configure.
+screenshots are read in the browser and work either way. Copy `.env.example` to `.env` (or export the variables) to configure.
 
 ## Tests
 

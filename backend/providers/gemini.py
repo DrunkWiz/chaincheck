@@ -4,14 +4,13 @@ Not exercised by the test suite (no network). `transport` is injectable so
 the request and response handling can be tested offline.
 """
 
-import base64
 import json
 import os
 import urllib.error
 import urllib.request
 
 from backend import config
-from backend.providers.base import TRANSCRIBE_PROMPT, ProviderError
+from backend.providers.base import ProviderError
 
 API = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
@@ -54,15 +53,6 @@ class GeminiProvider:
             "systemInstruction": {"parts": [{"text": system}]},
             "contents": [{"role": "user", "parts": [{"text": user}]}],
             "generationConfig": {"temperature": 0, "responseMimeType": "application/json"},
-        })
-
-    def read_images(self, images):
-        parts = [{"text": TRANSCRIBE_PROMPT}]
-        for mime, data in images:
-            parts.append({"inlineData": {"mimeType": mime, "data": base64.b64encode(data).decode()}})
-        return self._call({
-            "contents": [{"role": "user", "parts": parts}],
-            "generationConfig": {"temperature": 0},
         })
 
 

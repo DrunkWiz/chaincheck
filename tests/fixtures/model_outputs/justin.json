@@ -1,28 +1,83 @@
 {
-  "people": [{"name": "Marcus Vell", "claimed_title": "Professor, AI quantitative trading"}],
-  "companies": ["QuantEdge AI"],
-  "apps": [{"name": "QuantEdge AI", "source": "link"}],
-  "domains": ["quantedge-ai.example"],
+  "people": [
+    {
+      "name": "Marcus Vell",
+      "claimed_title": "Professor, AI quantitative trading"
+    }
+  ],
+  "companies": [
+    "QuantEdge AI"
+  ],
+  "apps": [
+    {
+      "name": "QuantEdge AI",
+      "source": "link"
+    }
+  ],
+  "domains": [
+    "quantedge-ai.example"
+  ],
   "phones": [],
   "emails": [],
   "accounts": [],
-  "wallets": ["0x7a3f9c2e4b1d8a6f0e5c7b9d2a4f6e8c1b3dc91e"],
-  "returns": [{"percent": 2, "period": "day", "quote": "the app showed 2% per day"}],
+  "wallets": [
+    "0x7a3f9c2e4b1d8a6f0e5c7b9d2a4f6e8c1b3dc91e"
+  ],
+  "returns": [
+    {
+      "percent": 2,
+      "period": "day",
+      "quote": "the app showed 2% per day"
+    }
+  ],
   "fees": [],
   "payment": [
-    {"method": "bank_transfer", "quote": "Deposited $500 by bank transfer"},
-    {"method": "crypto", "quote": "top up $20,000 in USDT to this new wallet"}
+    {
+      "method": "bank_transfer",
+      "quote": "Deposited $500 by bank transfer"
+    },
+    {
+      "method": "crypto",
+      "quote": "top up $20,000 in USDT to this new wallet"
+    }
   ],
   "events": [
-    {"signal": "public_figure_ad", "quote": "a Facebook ad where a famous investor shared his \"secret AI method\""},
-    {"signal": "secret_method", "quote": "secret AI method"},
-    {"signal": "group_invite", "quote": "joined their Telegram group"},
-    {"signal": "expert_mentor", "quote": "Prof. Marcus Vell (AI quantitative trading professor) posts signals every day"},
-    {"signal": "members_posting_profits", "quote": "members post screenshots of their profits"},
-    {"signal": "private_app_invite", "quote": "invited me to the private beta of the QuantEdge AI app"},
-    {"signal": "small_deposit", "quote": "Deposited $500"},
-    {"signal": "withdrawal_succeeded", "quote": "I withdrew $120 which reached my account"},
-    {"signal": "crypto_to_new_wallet", "quote": "top up $20,000 in USDT to this new wallet"}
+    {
+      "signal": "public_figure_ad",
+      "quote": "a Facebook ad where a famous investor shared his \"secret AI method\""
+    },
+    {
+      "signal": "secret_method",
+      "quote": "secret AI method"
+    },
+    {
+      "signal": "group_invite",
+      "quote": "joined their Telegram group"
+    },
+    {
+      "signal": "expert_mentor",
+      "quote": "Prof. Marcus Vell (AI quantitative trading professor) posts signals every day"
+    },
+    {
+      "signal": "members_posting_profits",
+      "quote": "members post screenshots of their profits"
+    },
+    {
+      "signal": "private_app_invite",
+      "quote": "invited me to the private beta of the QuantEdge AI app"
+    },
+    {
+      "signal": "small_deposit",
+      "quote": "Deposited $500"
+    },
+    {
+      "signal": "withdrawal_succeeded",
+      "quote": "I withdrew $120 which reached my account"
+    },
+    {
+      "signal": "crypto_to_new_wallet",
+      "quote": "top up $20,000 in USDT to this new wallet"
+    }
   ],
   "concerns": []
 }

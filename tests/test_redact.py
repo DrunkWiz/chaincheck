@@ -40,3 +40,26 @@ def test_scrub_display_hides_numbers_only():
     out = scrub_display("Call Ms Lau at +65 8000 4321, IC S1234567D, acct 123-456789-0, on 2026-09-20")
     assert "8000" not in out and "S1234567D" not in out and "456789" not in out
     assert "Ms Lau" in out and "2026-09-20" in out
+
+
+def test_model_never_sees_personal_numbers():
+    from backend.redact import for_model
+    text = ("Mr Victor Hale (analyst) says call +65 8000 4321 or mail desk@x.example. "
+            "My NRIC S1234567D, my name is Mei Tan. Pay 123-456789-0 or wallet "
+            "0x7a3f9c2e4b1d8a6f0e5c7b9d2a4f6e8c1b3dc91e. Site x.example, 32% per month.")
+    out = for_model(text)
+    for secret in ("8000", "desk@", "S1234567D", "Mei Tan", "456789"):
+        assert secret not in out
+    for kept in ("Victor Hale", "analyst", "0x7a3f9c2e4b1d8a6f0e5c7b9d2a4f6e8c1b3dc91e", "x.example", "32% per month"):
+        assert kept in out
+
+
+def test_pipeline_sends_redacted_text_but_still_flags_phones():
+    from backend.pipeline import analyze
+    from backend.providers.fake import FakeProvider
+    from tests.conftest import make_ctx
+    seen = []
+    provider = FakeProvider(lambda offer: seen.append(offer) or "{}")
+    result = analyze("Merlion Crest Capital, call +65 8000 4321", provider, make_ctx())
+    assert "8000" not in seen[0]
+    assert "copycat.contact_mismatch" in {f.rule for f in result.flags}  # phone still checked by code

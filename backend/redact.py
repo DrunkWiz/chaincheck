@@ -62,6 +62,20 @@ def redact(text, names=()):
     return _restore(new, wallets), counts
 
 
+def for_model(text):
+    """What the model is allowed to see. Phones, emails, NRIC/FIN, account numbers and
+    "my name is ..." are removed: code extracts those from the original text, so the
+    model never needs them. Names with titles stay, because the model's job includes
+    spotting claimed titles (and they're usually the scammer's alias)."""
+    text, wallets = _protect(text, WALLET)
+    text = EMAIL.sub("[EMAIL]", text)
+    text = NRIC.sub("[NRIC]", text)
+    text = ACCOUNT.sub("[ACCOUNT]", text)
+    text = PHONE.sub("[PHONE]", text)
+    text = SELF_NAME.sub(lambda m: f"{m.group(1)} [NAME]", text)
+    return _restore(text, wallets)
+
+
 def scrub_display(text):
     """Hide phone, account and NRIC numbers in text we show back."""
     text, wallets = _protect(text, WALLET)

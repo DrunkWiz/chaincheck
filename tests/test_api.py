@@ -1,4 +1,3 @@
-import base64
 import json
 
 import pytest
@@ -44,20 +43,16 @@ def test_analyze_with_answers(app):
     ({}, 400),
     ({"text": 5}, 400),
     ({"text": "x" * 20_001}, 400),
-    ({"images": [{"mime": "image/gif", "data": "AAAA"}]}, 400),
-    ({"images": [{"mime": "image/png", "data": "not base64!"}]}, 400),
-    ({"images": [{"mime": "image/png", "data": base64.b64encode(b"png").decode()}]}, 503),
+    ({"text": "Earn 3% a day", "images": [{"mime": "image/png", "data": "AAAA"}]}, 400),
+    ({"text": "   "}, 400),
 ])
 def test_analyze_rejects_bad_input(app, payload, status):
     assert post(app, "/api/analyze", payload)[0] == status
 
 
-def test_screenshot_flow():
-    provider = FakeProvider(lambda offer: "{}", transcript="Earn 5% per day, pay the withdrawal tax.")
-    app = App(db=database.init(database.SqliteDatabase()), provider_factory=lambda: provider,
-              context_factory=context_factory())
-    status, body = post(app, "/api/analyze", {"images": [{"mime": "image/png", "data": base64.b64encode(b"x").decode()}]})
-    assert status == 200 and body["verdict"] == "STOP" and body["transcript"]
+def test_images_are_refused_so_they_never_reach_the_server(app):
+    status, body = post(app, "/api/analyze", {"images": [{"mime": "image/png", "data": "AAAA"}]})
+    assert status == 400 and "browser" in body["error"]
 
 
 def test_bad_json_and_unknown_route(app):

@@ -68,9 +68,7 @@ MAX_REPORT_CHARS = 8000
 
 # --- Request limits -------------------------------------------------------------
 MAX_TEXT_CHARS = 20_000
-MAX_IMAGES = 4
-MAX_IMAGE_BYTES = 4_000_000
-MAX_BODY_BYTES = 24_000_000
+MAX_BODY_BYTES = 200_000  # text only: screenshots are read on the device
 MAX_ANSWER_CHARS = 120
 
 # --- Model ------------------------------------------------------------------------

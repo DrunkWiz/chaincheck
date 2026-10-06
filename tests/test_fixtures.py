@@ -5,6 +5,7 @@ import pytest
 
 from backend import schema
 from backend.extract import extract
+from backend.redact import for_model
 from tests.conftest import OFFER_NAMES, load_json, load_model_output, load_offer
 
 
@@ -32,7 +33,7 @@ def test_quotes_in_model_output_come_from_the_offer(name):
 
 @pytest.mark.parametrize("name", OFFER_NAMES)
 def test_honest_fake_replays_each_fixture(name, honest_model):
-    result = extract(load_offer(name), honest_model)
+    result = extract(for_model(load_offer(name)), honest_model)  # the model only sees redacted text
     assert result.entities == schema.validate(load_model_output(name)).entities
 
 
