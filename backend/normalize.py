@@ -58,12 +58,16 @@ def wallet(value):
     return value.lower() if value.lower().startswith("0x") else value
 
 
+class ConfigError(RuntimeError):
+    """A required server setting is missing. Never fall back silently in production."""
+
+
 def secret():
     value = os.environ.get("PHONE_HMAC_SECRET")
     if value:
         return value
     if os.environ.get("VERCEL"):
-        raise RuntimeError("PHONE_HMAC_SECRET must be set in the Vercel dashboard")
+        raise ConfigError("PHONE_HMAC_SECRET must be set in the Vercel dashboard")
     return _DEV_SECRET
 
 

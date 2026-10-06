@@ -10,9 +10,10 @@ import hmac
 import json
 import os
 import re
+import sys
 from urllib.parse import parse_qs
 
-from backend import community, config, db as database, pipeline, snapshots
+from backend import community, config, db as database, normalize, pipeline, snapshots
 from backend.providers.base import ProviderError
 
 IMAGE_TYPES = ("image/png", "image/jpeg", "image/webp")
@@ -68,6 +69,10 @@ class App:
             return 400, {"error": str(exc)}
         except database.DatabaseError:
             return 503, {"error": "Community reports are unavailable right now. Checks still work."}
+        except normalize.ConfigError as exc:
+            print(f"ChainCheck config error: {exc}", file=sys.stderr)  # names the variable, never its value
+            return 503, {"error": "ChainCheck isn't fully set up yet, so we can't check this right now. "
+                                  "Please try again later."}
 
     # --- routes -------------------------------------------------------------
 

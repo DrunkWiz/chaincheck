@@ -3,7 +3,7 @@
 Decision (5 Oct): SQLite locally and in tests; Turso (hosted, SQLite-compatible)
 in production, over its HTTP API with the standard library. Same SQL in both.
 Set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN to use Turso; otherwise the SQLite
-file at DATABASE_PATH is used (not persistent on Vercel).
+file at DATABASE_PATH is used. On Vercel without Turso, storage is refused.
 """
 
 import base64
@@ -55,7 +55,6 @@ class DatabaseError(Exception):
 
 
 class SqliteDatabase:
-    persistent = True
 
     def __init__(self, path=":memory:"):
         self.path = path
@@ -98,7 +97,6 @@ def _http_transport(url, headers, body, timeout=10):
 class TursoDatabase:
     """Turso over the Hrana-over-HTTP pipeline endpoint."""
 
-    persistent = True
 
     def __init__(self, url, token, transport=_http_transport):
         url = url.strip()
@@ -169,6 +167,7 @@ def from_env():
     url = os.environ.get("TURSO_DATABASE_URL")
     if url:
         return init(TursoDatabase(url, os.environ.get("TURSO_AUTH_TOKEN", "")))
-    db = SqliteDatabase(os.environ.get("DATABASE_PATH", "chaincheck.sqlite3"))
-    db.persistent = not os.environ.get("VERCEL")
-    return init(db)
+    if os.environ.get("VERCEL"):
+        # Vercel's filesystem doesn't keep writes: refuse rather than lose reports.
+        raise DatabaseError("TURSO_DATABASE_URL is not set")
+    return init(SqliteDatabase(os.environ.get("DATABASE_PATH", "chaincheck.sqlite3")))

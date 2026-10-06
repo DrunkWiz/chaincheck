@@ -105,6 +105,8 @@ written by someone else and modelled on real cases and real licensed-firm promot
 
 ## Deploy (Vercel)
 
+Step by step: [docs/DEPLOY.md](docs/DEPLOY.md).
+
 `vercel.json` builds the front end and routes `/api/*` to `api/index.py` (stdlib, no framework).
 Set **every** variable from `.env.example` in the Vercel dashboard. Community reports need Turso
 (`TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`) because Vercel's filesystem doesn't keep writes; seed it

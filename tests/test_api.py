@@ -117,3 +117,21 @@ def test_database_outage_does_not_break_checks():
 def test_meta(app):
     status, body = app.handle("GET", "/api/meta", "", b"", {})
     assert status == 200 and "snapshot" in body["fid"] and body["demo"] is True
+
+
+def test_missing_hmac_secret_on_vercel_is_a_clear_503(monkeypatch, capsys):
+    monkeypatch.setenv("VERCEL", "1")
+    monkeypatch.delenv("PHONE_HMAC_SECRET", raising=False)
+
+    def factory(network_lookup=None, secret=None, **_):
+        ctx = make_ctx(network=network_lookup)
+        ctx.secret = secret  # use the app's (missing) secret, not the test one
+        return ctx
+
+    app = App(db=database.init(database.SqliteDatabase()), provider_factory=lambda: None,
+              context_factory=factory, secret=None)
+    status, body = post(app, "/api/analyze", {"text": "Call me on +65 8000 4321, earn 3% per day"})
+    assert status == 503 and "isn't fully set up" in body["error"]
+    assert "PHONE_HMAC_SECRET" in capsys.readouterr().err
+    # Offers without phone numbers still get checked.
+    assert post(app, "/api/analyze", {"text": "Earn 3% per day"})[0] == 200

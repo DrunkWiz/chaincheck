@@ -72,8 +72,18 @@ def test_from_env_prefers_turso(monkeypatch):
     assert isinstance(database.from_env(), database.TursoDatabase)
 
 
-def test_from_env_sqlite_is_not_persistent_on_vercel(monkeypatch, tmp_path):
+def test_from_env_refuses_sqlite_on_vercel(monkeypatch):
     monkeypatch.delenv("TURSO_DATABASE_URL", raising=False)
-    monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "x.sqlite3"))
     monkeypatch.setenv("VERCEL", "1")
-    assert database.from_env().persistent is False
+    with pytest.raises(database.DatabaseError, match="TURSO_DATABASE_URL"):
+        database.from_env()
+
+
+def test_api_without_turso_on_vercel_still_checks(monkeypatch):
+    from backend.api import App
+    from tests.conftest import context_factory
+    monkeypatch.delenv("TURSO_DATABASE_URL", raising=False)
+    monkeypatch.setenv("VERCEL", "1")
+    app = App(provider_factory=lambda: None, context_factory=context_factory(), secret="s")
+    assert app.handle("POST", "/api/analyze", "", b'{"text": "Earn 3% per day"}', {})[0] == 200
+    assert app.handle("GET", "/api/reports", "", b"", {})[0] == 503

@@ -73,9 +73,12 @@ def check(entities, ctx):
     if ctx.network is None:
         return []
     licensed = licensed_keys(ctx.fid)
-    licensed_phones = {normalize.keyed_hash(p, ctx.secret) for f in ctx.fid.firms for p in f.phones}
+    keys = entity_keys(entities, ctx.secret)
+    # Hash licensed phones only when needed: hashing needs the server secret.
+    licensed_phones = ({normalize.keyed_hash(p, ctx.secret) for f in ctx.fid.firms for p in f.phones}
+                       if any(kind == "phone_hash" for kind, _, _ in keys) else set())
     flags = []
-    for kind, key, display in entity_keys(entities, ctx.secret):
+    for kind, key, display in keys:
         hit = ctx.network(kind, key)
         if not hit or hit.reports < 1:
             continue

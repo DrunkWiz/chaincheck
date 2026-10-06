@@ -108,8 +108,10 @@ def submit(db, story, outcome, scam_type, confirmations, provider, ctx, secret=N
 def _linkable(entities, ctx, secret):
     """Entity keys that may link reports: never a licensed firm's name, site or phone."""
     licensed = network.licensed_keys(ctx.fid)
-    licensed_phones = {normalize.keyed_hash(p, secret) for f in ctx.fid.firms for p in f.phones}
-    return [(k, v, d) for k, v, d in network.entity_keys(entities, secret)
+    keys = network.entity_keys(entities, secret)
+    licensed_phones = ({normalize.keyed_hash(p, secret) for f in ctx.fid.firms for p in f.phones}
+                       if any(k == "phone_hash" for k, _, _ in keys) else set())
+    return [(k, v, d) for k, v, d in keys
             if (k, v) not in licensed and not (k == "phone_hash" and v in licensed_phones)]
 
 
