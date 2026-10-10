@@ -459,3 +459,34 @@ button:disabled { cursor:not-allowed; opacity:.55; }
 @media(max-width:759px) { .evidence-chain { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:450px) { .evidence-chain { grid-template-columns:1fr; } }
 @media print { .evidence-chain button { display:flex!important; } }
+
+/* Review fixes on the redesign (11 Oct) --------------------------------------
+   Readable text: body copy at least 16px (labels may be smaller, never below 12px). */
+.privacy-note, .demo-banner, .site-footer, .help-card span span, .help-card strong,
+.calculator > p:last-child, .calculator-output > span, .example-strip p, .playbook-preview > span,
+.mode-switch .chip, .nav a, .evidence-kind, .evidence-status, .region-label { font-size: 16px; }
+.textarea-meta { font-size: 14px; }
+.example-options small { font-size: 12px; }
+.section-kicker, .return-explorer .eyebrow, .learn-banner .eyebrow, .chain-heading .eyebrow,
+.example-strip .section-kicker { font-size: 13px; }
+@media (max-width: 390px) { .textarea-meta { font-size: 13px; } }
+
+/* Home extras (brief §15) */
+.home-extras { padding: 40px 0 8px; display: grid; gap: 36px; }
+.home-extras section { padding: 0; }
+.stat-copy { font-size: 1.2rem; font-weight: 700; margin-top: 10px; }
+
+/* Phone: get "Check this offer" onto the first screen */
+@media (max-width: 599px) {
+  .check-home { padding-top: 18px; }
+  .intro-row { margin: 14px 0 18px; }
+  .intro-row h1 { font-size: 2.1rem; margin-bottom: 0; }
+  .intro-copy { display: none; }
+  .checker { padding: 16px; }
+  .checker-heading { margin-bottom: 14px; }
+  .checker-heading p, .checker-heading > svg, .number-icon { display: none; }
+  .checker-heading h2 { font-size: 1.3rem; }
+  .mode-switch { margin-bottom: 14px; }
+  .offer-box textarea { min-height: 140px; }
+  .analyze-button { margin-top: 12px; }
+}

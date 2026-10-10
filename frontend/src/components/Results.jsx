@@ -134,7 +134,6 @@ export default function Results({ result, onAnswer, busy }) {
 
   return (
     <div aria-live="polite">
-      <div className="report-tools"><button className="btn secondary" onClick={() => downloadReport(result)}>Download report ↓</button><button className="btn quiet" onClick={() => window.print()}>Print report</button><span className="tag">Checked {result.data.checked_on}</span></div>
       <div className={`verdict ${stop ? "stop" : "clear"}`} role="status">
         <div className="verdict-icon" aria-hidden="true">{stop ? "✕" : "?"}</div>
         <h2>{result.headline}</h2>
@@ -147,6 +146,7 @@ export default function Results({ result, onAnswer, busy }) {
 
       {!stop && <FollowUps questions={result.questions} onAnswer={onAnswer} busy={busy} />}
       <Summary result={result} share={share} />
+      <div className="report-tools"><button className="btn secondary" onClick={() => downloadReport(result)}>Download report ↓</button><button className="btn quiet" onClick={() => window.print()}>Print report</button><span className="tag">Checked {result.data.checked_on}</span></div>
       {stop && <FollowUps questions={result.questions} onAnswer={onAnswer} busy={busy} />}
 
       {stop && <Stage stage={result.stage} />}

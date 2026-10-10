@@ -3,6 +3,7 @@ import { api } from "../api.js";
 import { readScreenshots } from "../ocr.js";
 import { EXAMPLES } from "../examples.js";
 import Icon from "../components/Icon.jsx";
+import HomeExtras from "../components/HomeExtras.jsx";
 import ReturnExplorer from "../components/ReturnExplorer.jsx";
 import Results from "../components/Results.jsx";
 
@@ -96,7 +97,7 @@ export default function Check({ meta }) {
   function useExample(ex) { edit(ex.text); setExample(ex.id); setMode("paste"); }
   async function run(payload) {
     const id = ++sequence.current;
-    setBusy(true); setError(""); setResult(null);
+    setBusy(true); setError(""); // keep the current result visible while follow-up answers re-run
     try {
       const data = await api.analyze(payload);
       if (id !== sequence.current) return;
@@ -109,7 +110,7 @@ export default function Check({ meta }) {
   function onSubmit(e) {
     e.preventDefault();
     if (!text.trim()) { setError("Paste an offer, add a screenshot, or choose an example to get started."); inputRef.current?.focus(); return; }
-    setAnswers({}); run({ text, answers: {} });
+    setAnswers({}); setResult(null); run({ text, answers: {} });
   }
   function onAnswer(id, value) {
     const next = { ...answers, [id]: value };
@@ -145,7 +146,7 @@ export default function Check({ meta }) {
             <div className="mode-switch" role="group" aria-label="How do you want to check?">
               {[["paste", "text", "Paste text"], ["upload", "upload", "Screenshots"], ["guided", "book", "Guide me"]].map(([key, icon, label]) => <button key={key} type="button" className="chip" disabled={locked} aria-pressed={mode === key} onClick={() => { setMode(key); setError(""); }}><Icon name={icon} size={19}/>{label}</button>)}
             </div>
-            {mode === "guided" ? <GuidedForm busy={locked} onSubmit={(t,a) => { setAnswers(a); run({ text:t, answers:a }); }}/> : <form onSubmit={onSubmit}>
+            {mode === "guided" ? <GuidedForm busy={locked} onSubmit={(t,a) => { setAnswers(a); setResult(null); run({ text:t, answers:a }); }}/> : <form onSubmit={onSubmit}>
               {mode === "upload" && <div className={`dropzone ${dragging ? "dragging" : ""}`} onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={e => { e.preventDefault(); setDragging(false); onFiles(e.dataTransfer.files); }}><Icon name="upload" size={36}/><h3>Drop the conversation here</h3><p>Up to 4 images · PNG, JPG or WebP · 10 MB each</p><label className="btn secondary upload-control">Choose screenshots<input aria-label="Choose screenshots" type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={locked} onChange={e => { onFiles(e.target.files); e.target.value=""; }}/></label><p className="small muted">Images stay on your device. Review the extracted text before checking.</p></div>}
               {mode === "paste" && <><div className="field-top"><label className="field" htmlFor="offer">The message, pitch or promise</label>{text && <button type="button" className="text-action" disabled={locked} onClick={() => edit("")}>Clear</button>}</div><div className="offer-box"><textarea ref={inputRef} id="offer" value={text} disabled={locked} onChange={e => edit(e.target.value)} maxLength={20000} placeholder={'“Join our private investment group. Earn 2% every day with our AI trading platform…”\n\nPaste the full message here. Names, websites and payment details help us connect the dots.'}/><div className="textarea-meta"><span><Icon name="lock" size={14}/> Not saved by ChainCheck</span><span>{text.length.toLocaleString()} / 20,000</span></div></div><button className="btn analyze-button" disabled={locked}>{busy ? <><span className="spinner"/> Checking the offer…</> : <>Check this offer <Icon name="arrow"/></>}</button></>}
             </form>}
@@ -161,7 +162,7 @@ export default function Check({ meta }) {
         </div>
         <div className="example-strip"><div><span className="section-kicker">TAKE IT FOR A TEST RUN</span><p>No message handy? Try an invented example.</p></div><div className="example-options">{EXAMPLES.map((ex, i) => <button key={ex.id} type="button" disabled={locked} aria-pressed={example === ex.id} onClick={() => useExample(ex)}><Icon name={["network","text","book"][i]}/><span>{["The copycat firm","The AI trading group","The broker promotion"][i]}<small>MOCK EXAMPLE</small></span><Icon name="arrow" size={18}/></button>)}</div></div>
         <div ref={resultRef} tabIndex={-1} className="result-anchor">{result && <><div className="report-heading"><div><p className="eyebrow">YOUR CHECK, EXPLAINED</p><h2>Here’s what we found.</h2></div><button className="btn quiet" onClick={() => { setResult(null); setText(""); setExample(null); setAnswers({}); setMode("paste"); window.scrollTo({top:0,behavior:scrollBehavior()}); }}>Start a new check <Icon name="arrow"/></button></div>{meta?.demo && <p className="notice">Demo report: firm records and community reports are invented. Do not use this as a real investment decision.</p>}<Results result={result} onAnswer={onAnswer} busy={busy}/></>}</div>
-        {!result && <><ReturnExplorer/><div className="learn-banner"><div><p className="eyebrow">SAME PLAYBOOK. DIFFERENT NAMES.</p><h2>Learn to spot the next move.</h2><p>The friendly introduction. The small win. The bigger ask.<br/>Get familiar with the pattern before you’re part of it.</p><a className="btn" href="#/learn">Explore the scam playbook <Icon name="arrow"/></a></div><div className="playbook-preview" aria-label="Common scam sequence"><span>01 <b>The introduction</b></span><span>02 <b>The small win</b></span><span className="danger-step">03 <b>The bigger ask</b><Icon name="alert" size={18}/></span><span>04 <b>The withdrawal fee</b></span></div></div></>}
+        {!result && <><ReturnExplorer/><div className="learn-banner"><div><p className="eyebrow">SAME PLAYBOOK. DIFFERENT NAMES.</p><h2>Learn to spot the next move.</h2><p>The friendly introduction. The small win. The bigger ask.<br/>Get familiar with the pattern before you’re part of it.</p><a className="btn" href="#/learn">Explore the scam playbook <Icon name="arrow"/></a></div><div className="playbook-preview" aria-label="Common scam sequence"><span>01 <b>The introduction</b></span><span>02 <b>The small win</b></span><span className="danger-step">03 <b>The bigger ask</b><Icon name="alert" size={18}/></span><span>04 <b>The withdrawal fee</b></span></div></div><HomeExtras/></>}
       </div>
     </section>
   </>;

@@ -120,7 +120,7 @@ export default function Community({ meta }) {
           </aside>
           <div className="list-area">
             {data && data.reports.length === 0 && <div className="empty-state"><h3>No matching reports</h3><p>Try a company name or fewer search terms. An empty result does not clear an offer.</p><button className="btn secondary" onClick={() => { setQuery(""); setType(""); load("", ""); }}>Clear filters</button></div>}
-            {(data ? [...data.reports].sort((a,b) => sort === "helpful" ? b.helped - a.helped : sort === "linked" ? b.network_size - a.network_size : 0) : []).map((r) => <ReportCard key={r.id} report={r} />)}
+            {(data ? [...data.reports].sort((a,b) => sort === "helpful" ? (b.helped || 0) - (a.helped || 0) : sort === "linked" ? (b.network_size || 0) - (a.network_size || 0) : 0) : []).map((r) => <ReportCard key={r.id} report={r} />)}
           </div>
           <aside className="extras-area">
             <div className="card">
