@@ -4,6 +4,9 @@ import { readScreenshots } from "../ocr.js";
 import { EXAMPLES } from "../examples.js";
 import Results from "../components/Results.jsx";
 
+const scrollBehavior = () =>
+  (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
+
 const MAX_FILES = 4;
 const MAX_BYTES = 10_000_000;
 const TYPES = ["image/png", "image/jpeg", "image/webp"];
@@ -82,7 +85,7 @@ export default function Check() {
       const data = await api.analyze(payload);
       lastRequest.current = payload;
       setResult(data);
-      requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: "start" }), 50);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -141,20 +144,29 @@ export default function Check() {
   return (
     <>
       <section className="hero">
-        <div className="wrap">
-          <p className="eyebrow">Investment scam check for Singapore</p>
-          <h1>Someone offered you an investment. Check it before you pay.</h1>
-          <p className="muted">
-            Paste the messages or upload screenshots. We check every claim we can, show where you are in the
-            scam playbook, and tell you what they'll ask for next.
-          </p>
+        <div className="wrap wide hero-grid">
+          <div className="hero-intro">
+            <p className="eyebrow">Investment scam check for Singapore</p>
+            <h1>Someone offered you an investment. Check it before you pay.</h1>
+            <p className="muted hero-lede">
+              Paste the messages or add screenshots. We check every claim we can, show where you are in the
+              scam playbook, and tell you what they'll ask for next.
+            </p>
+            <ul className="hero-points">
+              <li>Checks MAS licence lists, copycat contact details, website age and the maths on returns</li>
+              <li>Fixed rules decide. The AI only reads the text, and can never mark anything safe</li>
+              <li>Screenshots are read on your device and never uploaded</li>
+            </ul>
+          </div>
 
           <div className="checker">
-            <div className="btn-row" role="tablist" aria-label="How to check" style={{ marginBottom: 14 }}>
-              <button type="button" role="tab" aria-selected={mode === "paste"} className={`chip`}
-                aria-pressed={mode === "paste"} onClick={() => setMode("paste")}>Paste or upload</button>
-              <button type="button" role="tab" aria-selected={mode === "guided"} className="chip"
-                aria-pressed={mode === "guided"} onClick={() => setMode("guided")}>Answer 3 questions</button>
+            <div className="mode-switch" role="group" aria-label="How do you want to check?">
+              <button type="button" className="chip" aria-pressed={mode === "paste"} onClick={() => setMode("paste")}>
+                Paste or add screenshots
+              </button>
+              <button type="button" className="chip" aria-pressed={mode === "guided"} onClick={() => setMode("guided")}>
+                Answer 3 questions
+              </button>
             </div>
 
             {mode === "paste" ? (
@@ -162,25 +174,23 @@ export default function Check() {
                 <label className="field" htmlFor="offer">What did the offer say?</label>
                 <textarea id="offer" value={text} onChange={(e) => setText(e.target.value)} maxLength={20000}
                   placeholder="Paste the chat, ad or message here. Include names, links, numbers and how they want you to pay." />
-                <div className="upload">
+                <div className="checker-actions">
+                  <button className="btn" disabled={busy || !!reading}>{busy ? "Checking…" : "Check this offer"}</button>
                   <label className={`btn quiet${reading ? " disabled" : ""}`} htmlFor="shots" aria-disabled={!!reading}>
                     Add screenshots
                     <input id="shots" type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={onFiles}
                       disabled={!!reading} />
                   </label>
-                  <span className="small muted">
-                    Up to 4 at a time. They're read on your device and never uploaded. The text appears in the box
-                    above, so you can remove anything personal before you check.
-                  </span>
                 </div>
-                <p role="status" aria-live="polite" className="small" style={{ minHeight: 24, margin: "0 0 10px" }}>
-                  {readingText}
+                <p role="status" aria-live="polite" className="small reading-status">{readingText}</p>
+                <p className="small muted hint">
+                  Screenshots (up to 4) are read on your device and never uploaded. Their text appears in the box,
+                  so you can remove anything personal first.
                 </p>
-                <button className="btn" disabled={busy || !!reading}>{busy ? "Checking…" : "Check this offer"}</button>
                 <div className="examples">
-                  <span className="small muted">Try an invented example:</span>
+                  <span className="small muted">Or try an invented example:</span>
                   {EXAMPLES.map((ex) => (
-                    <button key={ex.id} type="button" className="btn quiet" onClick={() => setText(ex.text)}>
+                    <button key={ex.id} type="button" className="chip" onClick={() => setText(ex.text)}>
                       {ex.label}
                     </button>
                   ))}
@@ -190,12 +200,19 @@ export default function Check() {
               <GuidedForm busy={busy} onSubmit={(t, a) => { setAnswers(a); run({ text: t, answers: a }); }} />
             )}
             {error && <p className="error" role="alert" style={{ marginTop: 14 }}>{error}</p>}
-            <p className="small muted" style={{ marginTop: 14, marginBottom: 0 }}>
-              We don't store what you check. To read it, we send the text (never your screenshots) to Google's Gemini AI, with phone numbers, emails, NRIC and account numbers removed first. Google may use what it receives to improve its products. Only stories you choose to share are kept, after review.
-            </p>
+            <details className="privacy-note">
+              <summary>We don't store what you check. How your data is handled</summary>
+              <p>
+                To read it, we send the text (never your screenshots) to Google's Gemini AI, with phone numbers,
+                emails, NRIC and account numbers removed first. Google may use what it receives to improve its
+                products. Only stories you choose to share are kept, after review.
+              </p>
+            </details>
           </div>
+        </div>
 
-          <div ref={resultRef} style={{ scrollMarginTop: 90 }}>
+        <div className="wrap">
+          <div ref={resultRef} style={{ scrollMarginTop: 16 }}>
             {result && <Results result={result} onAnswer={onAnswer} busy={busy} />}
           </div>
         </div>

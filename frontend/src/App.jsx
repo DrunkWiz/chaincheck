@@ -22,6 +22,7 @@ function currentRoute() {
 export default function App() {
   const [route, setRoute] = useState(currentRoute);
   const [meta, setMeta] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const onHash = () => {
@@ -43,32 +44,45 @@ export default function App() {
   const Page = PAGES[route].component;
   return (
     <>
-      <a className="sr-only" href="#main">Skip to content</a>
+      <a className="skip-link" href="#main" onClick={(e) => {
+        e.preventDefault(); // "#main" would be read as a route by the hash router
+        document.getElementById("main")?.focus();
+      }}>Skip to content</a>
       {meta?.demo && (
         <div className="demo-banner" role="note">
           <div className="wrap wide">
-            <strong>Demo data:</strong> the MAS lists used here contain invented firms, and community
-            reports are synthetic. Don't rely on these results for a real decision.
+            <details>
+              <summary><span><strong>Demo data:</strong> invented firms and synthetic reports.</span></summary>
+              <p>
+                The MAS lists used here contain invented firms, and the community reports are synthetic.
+                Don't rely on these results for a real decision.
+              </p>
+            </details>
           </div>
         </div>
       )}
       <header className="site-header">
-        <div className="wrap wide">
+        <div className="wrap wide header-row">
           <a className="brand" href="#/">
             <img src="/favicon.svg" alt="" width="32" height="32" /> ChainCheck
           </a>
-          <nav className="nav" aria-label="Main">
+          <button type="button" className="menu-button" aria-expanded={menuOpen} aria-controls="main-nav"
+            onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? "Close" : "Menu"}
+          </button>
+          <nav id="main-nav" className={`nav${menuOpen ? " open" : ""}`} aria-label="Main">
             {Object.entries(PAGES)
               .filter(([, p]) => !p.hidden)
               .map(([key, p]) => (
-                <a key={key} href={`#/${key}`} aria-current={route === key ? "page" : undefined}>
+                <a key={key} href={`#/${key}`} aria-current={route === key ? "page" : undefined}
+                  onClick={() => setMenuOpen(false)}>
                   {p.title}
                 </a>
               ))}
           </nav>
         </div>
       </header>
-      <main id="main">
+      <main id="main" tabIndex={-1}>
         <Page meta={meta} />
       </main>
       <footer className="site-footer">

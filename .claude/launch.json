@@ -4,8 +4,12 @@
     {
       "name": "chaincheck",
       "runtimeExecutable": ".venv/Scripts/python.exe",
-      "runtimeArgs": ["-m", "backend.server"],
-      "port": 8000
+      "runtimeArgs": [
+        "-m",
+        "backend.server"
+      ],
+      "port": 8000,
+      "autoPort": true
     }
   ]
 }

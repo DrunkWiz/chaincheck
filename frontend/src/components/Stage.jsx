@@ -21,9 +21,6 @@ export default function Stage({ stage }) {
           {stage.evidence.map((q) => <blockquote key={q}>{q}</blockquote>)}
         </>
       )}
-      <div className="next-move">
-        <strong>What they'll likely ask next:</strong> {stage.next_move}
-      </div>
     </div>
   );
 }

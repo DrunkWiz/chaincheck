@@ -4,6 +4,8 @@ import { api, OUTCOME_LABELS, SCAM_TYPE_LABELS } from "../api.js";
 function ReportCard({ report }) {
   const [helped, setHelped] = useState(report.helped);
   const [clicked, setClicked] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const shown = expanded ? report.entities : report.entities.slice(0, 4);
   return (
     <article className="card report-card">
       <div className="meta">
@@ -12,7 +14,12 @@ function ReportCard({ report }) {
         {report.verdict === "STOP" && <span className="tag" style={{ background: "#FBECEB", color: "#A3241A" }}>✕ Checker said STOP</span>}
         {report.synthetic && <span className="tag synthetic">SYNTHETIC demo report</span>}
       </div>
-      <p className="story">{report.story}</p>
+      <p className={`story${expanded ? "" : " clamped"}`}>{report.story}</p>
+      {report.story.length > 220 && (
+        <button type="button" className="link-button" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
+          {expanded ? "Show less" : "Read more"}
+        </button>
+      )}
       {report.signals.length > 0 && (
         <p className="small"><strong>Signals:</strong> {report.signals.join(" · ")}</p>
       )}
@@ -20,7 +27,8 @@ function ReportCard({ report }) {
         <>
           <p className="small" style={{ margin: 0 }}><strong>Linked details</strong></p>
           <ul className="entity-list">
-            {report.entities.map((e) => <li key={`${e.kind}-${e.display}`}>{e.display}</li>)}
+            {shown.map((e) => <li key={`${e.kind}-${e.display}`}>{e.display}</li>)}
+            {shown.length < report.entities.length && <li className="muted">+{report.entities.length - shown.length} more</li>}
           </ul>
         </>
       )}
@@ -65,25 +73,28 @@ export default function Community() {
             placeholder="e.g. novaapex.example or a wallet address" style={{ flex: "1 1 260px" }} />
           <button className="btn">Search</button>
         </form>
-        <div className="filters" aria-label="Filter by scam type">
+        <div className="filters filters-chips" role="group" aria-label="Filter by scam type">
           <button type="button" className="chip" aria-pressed={type === ""} onClick={() => { setType(""); load(query, ""); }}>All</button>
           {Object.entries(SCAM_TYPE_LABELS).map(([k, l]) => (
             <button key={k} type="button" className="chip" aria-pressed={type === k}
               onClick={() => { setType(k); load(query, k); }}>{l}</button>
           ))}
         </div>
+        <div className="filters-select">
+          <label className="field" htmlFor="type-filter">Type of scam</label>
+          <select id="type-filter" value={type} onChange={(e) => { setType(e.target.value); load(query, e.target.value); }}>
+            <option value="">All types</option>
+            {Object.entries(SCAM_TYPE_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+          </select>
+        </div>
         {error && <p className="error" role="alert">{error}</p>}
 
         <div className="community-layout">
-          <div>
-            {data && data.reports.length === 0 && <p>No reports match that yet.</p>}
-            {data?.reports.map((r) => <ReportCard key={r.id} report={r} />)}
-          </div>
-          <aside>
-            <h2 style={{ fontSize: "1.3rem" }}>Network alerts</h2>
+          <aside className="alerts-area" aria-labelledby="alerts-heading">
+            <h2 id="alerts-heading" className="h3">Network alerts</h2>
             {data?.alerts.length === 0 && <p className="small">No linked groups yet.</p>}
             {data?.alerts.slice(0, 3).map((a) => (
-              <div className="alert-card" key={a.id} style={{ marginBottom: 12 }}>
+              <div className="alert-card" key={a.id}>
                 <div className="count">{a.reports} reports</div>
                 <p style={{ fontWeight: 700 }}>linked by shared details: likely one group using several names.</p>
                 <ul className="entity-list">
@@ -94,12 +105,18 @@ export default function Community() {
                 </p>
               </div>
             ))}
-            <div className="card" style={{ marginTop: 12 }}>
+          </aside>
+          <div className="list-area">
+            {data && data.reports.length === 0 && <p>No reports match that yet.</p>}
+            {data?.reports.map((r) => <ReportCard key={r.id} report={r} />)}
+          </div>
+          <aside className="extras-area">
+            <div className="card">
               <h3>Been through this?</h3>
               <p>Your story could stop the next person. Details are removed before anyone sees it.</p>
               <a className="btn" href="#/share">Share your story</a>
             </div>
-            <div className="card" style={{ marginTop: 12 }}>
+            <div className="card">
               <h3>Why there are no star ratings</h3>
               <p className="small">
                 Scammers post fake good reviews. So we only take reports of what went wrong, never "this is
