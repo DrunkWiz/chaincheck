@@ -1,7 +1,7 @@
 """HTTP routes (docs/BUILD_BRIEF.md §11), framework-free.
 
 `App.handle(method, path, query, body, headers)` returns (status, payload).
-`backend/server.py` serves it locally; `api/index.py` serves it on Vercel.
+`backend/server.py` serves it locally; `backend/wsgi.py` serves it on Vercel.
 """
 
 import hmac
@@ -33,7 +33,12 @@ class App:
     @property
     def db(self):
         if self._db is None:
-            self._db = database.from_env()
+            db = database.from_env()
+            if os.environ.get("SEED_DEMO_REPORTS") == "1":
+                # First start on a fresh database: add the labelled synthetic reports.
+                from backend.demo_seed import seed_if_empty
+                seed_if_empty(db, pipeline.make_context(rdap=lambda _domain: None), self.secret)
+            self._db = db
         return self._db
 
     def context(self, with_network=True):

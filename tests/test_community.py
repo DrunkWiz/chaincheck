@@ -3,7 +3,7 @@ import pytest
 from backend import community, db as database
 from backend.pipeline import analyze
 from backend.verdict import STOP
-from scripts import seed_reports
+from backend import demo_seed as seed_reports
 from tests.conftest import SECRET, make_ctx
 
 STORY = ("A man called Mr Daniel Koh added me to a Telegram group. He said AlphaGain Pro paid 3% per day. "
@@ -130,3 +130,10 @@ def test_copycat_reports_never_say_scam_about_the_real_firm(db):
     assert "copycat.contact_mismatch" in {f.rule for f in result.flags}
     # The copycat's phone was reported once; the licensed name itself is never a network flag.
     assert "network.copycat_reports" not in {f.rule for f in result.flags}
+
+
+def test_seeding_twice_adds_nothing(db):
+    seed_reports.seed(db, make_ctx(), secret=SECRET)
+    seed_reports.seed(db, make_ctx(), secret=SECRET)
+    assert len(community.list_reports(db)) == 12
+    assert seed_reports.seed_if_empty(db, make_ctx(), secret=SECRET) == 0

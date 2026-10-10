@@ -1,7 +1,7 @@
 """Serve the API (and the built front end, if present) with the standard library.
 
 Local: `python -m backend.server` then open http://localhost:8000
-Vercel imports `Handler` from here via api/index.py.
+On Vercel, backend/wsgi.py serves the same App (see vercel.json "services").
 """
 
 import json
@@ -25,9 +25,9 @@ def app():
 
 
 def resolve(raw_path):
-    """(path, query) for a request. On Vercel, vercel.json rewrites /api/<route>
-    to /api/index?__route=<route>; this works whether or not Vercel keeps the
-    original path."""
+    """(path, query) for a request. Also accepts a `__route=<route>` query on
+    /api or /api/index, a fallback for rewrites that don't keep the original path
+    (Vercel Services do keep it)."""
     url = urlsplit(raw_path)
     params = [(k, v) for k, v in parse_qsl(url.query, keep_blank_values=True)]
     route = next((v for k, v in params if k == "__route"), None)

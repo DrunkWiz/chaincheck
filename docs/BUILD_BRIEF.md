@@ -250,7 +250,7 @@ built from the patterns in the CNA cases. Say "synthetic" on screen and in the R
 | Model | Gemini 3.5 Flash behind a `Provider` interface with a fallback rung | **Decided 5 Oct:** Gemini over its REST API (stdlib), primary + fallback model from env; if both fail, code-only extraction and the result says so. Changed 6 Oct to the **free tier** (zero cost): personal numbers, emails and NRIC are removed before text reaches the model; the UI discloses that text goes to Google; screenshots go unredacted, with a crop-first notice |
 | Data | Dated JSON snapshots in `data/` | Snapshot date shown in the UI |
 | Database | SQLite locally | **Decided 5 Oct:** Turso (hosted SQLite) in production over its HTTP API with the stdlib; SQLite locally and in tests. Same SQL. Backup plan: Neon Postgres behind the same `db.py` interface |
-| Back end host | Vercel Python function | **Decided 5 Oct:** stdlib `BaseHTTPRequestHandler` in `api/index.py`, no framework |
+| Back end host | Vercel Python function | **Changed 10 Oct:** Vercel Services (`vercel.json`): a Vite `web` service and a Python `api` service whose entrypoint is the stdlib WSGI app `backend/wsgi.py`. File-based `api/*.py` functions aren't built for new projects |
 | Hosting | Vercel for the front end | Every env var goes in the Vercel dashboard, not just `.env` |
 
 **Suggested layout**

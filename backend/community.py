@@ -76,7 +76,7 @@ def preview(story, provider, ctx, secret=None):
 
 
 def submit(db, story, outcome, scam_type, confirmations, provider, ctx, secret=None, synthetic=False,
-           status="pending"):
+           status="pending", report_id=None):
     if outcome not in config.OUTCOMES:
         raise ReportError("Choose how it ended.")
     if scam_type not in config.SCAM_TYPES:
@@ -84,9 +84,9 @@ def submit(db, story, outcome, scam_type, confirmations, provider, ctx, secret=N
     if not synthetic and not (confirmations.get("redaction") and confirmations.get("truthful")):
         raise ReportError("Please confirm both statements before sending.")
     result, redacted, _, signals = _check_story(story, provider, ctx)
-    report_id = secrets.token_hex(8)
+    report_id = report_id or secrets.token_hex(8)
     statements = [(
-        "INSERT INTO reports (id, story, outcome, scam_type, verdict, signals, status, synthetic, created_at) "
+        "INSERT OR IGNORE INTO reports (id, story, outcome, scam_type, verdict, signals, status, synthetic, created_at) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (report_id, redacted, outcome, scam_type, result.verdict, json.dumps(signals), status,
          int(synthetic), _now()),

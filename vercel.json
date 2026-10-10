@@ -1,14 +1,18 @@
 {
-  "buildCommand": "cd frontend && npm ci && npm run build",
-  "outputDirectory": "frontend/dist",
-  "functions": {
-    "api/index.py": {
-      "includeFiles": "{backend,data}/**",
-      "maxDuration": 30
+  "services": {
+    "web": {
+      "root": "frontend/",
+      "framework": "vite",
+      "buildCommand": "npm ci && npm run build",
+      "outputDirectory": "dist"
+    },
+    "api": {
+      "root": "./",
+      "entrypoint": "backend.wsgi:app"
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index?__route=$1" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/api/(.*)", "destination": { "service": "api" } },
+    { "source": "/(.*)", "destination": { "service": "web" } }
   ]
 }

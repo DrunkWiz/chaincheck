@@ -5,7 +5,7 @@ import pytest
 from backend import db as database
 from backend.api import App
 from backend.providers.fake import FakeProvider
-from scripts import seed_reports
+from backend import demo_seed as seed_reports
 from tests.conftest import SECRET, context_factory, load_offer, make_ctx
 
 
@@ -130,3 +130,23 @@ def test_missing_hmac_secret_on_vercel_is_a_clear_503(monkeypatch, capsys):
     assert "PHONE_HMAC_SECRET" in capsys.readouterr().err
     # Offers without phone numbers still get checked.
     assert post(app, "/api/analyze", {"text": "Earn 3% per day"})[0] == 200
+
+
+def test_app_seeds_itself_once_when_asked(monkeypatch, tmp_path):
+    monkeypatch.delenv("TURSO_DATABASE_URL", raising=False)
+    monkeypatch.delenv("VERCEL", raising=False)
+    monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "fresh.sqlite3"))
+    monkeypatch.setenv("SEED_DEMO_REPORTS", "1")
+    for _ in range(2):  # a second cold start finds the reports and adds none
+        app = App(provider_factory=lambda: None, context_factory=context_factory(), secret=SECRET)
+        status, body = app.handle("GET", "/api/reports", "", b"", {})
+        assert status == 200 and len(body["reports"]) == 12
+
+
+def test_app_does_not_seed_unless_asked(monkeypatch, tmp_path):
+    monkeypatch.delenv("TURSO_DATABASE_URL", raising=False)
+    monkeypatch.delenv("VERCEL", raising=False)
+    monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "fresh.sqlite3"))
+    monkeypatch.delenv("SEED_DEMO_REPORTS", raising=False)
+    app = App(provider_factory=lambda: None, context_factory=context_factory(), secret=SECRET)
+    assert app.handle("GET", "/api/reports", "", b"", {})[1]["reports"] == []

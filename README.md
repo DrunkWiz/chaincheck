@@ -15,7 +15,7 @@ Built for WarriorHacks 2.0. Full plan: [docs/BUILD_BRIEF.md](docs/BUILD_BRIEF.md
 |---|---|
 | Checks, verdict, playbook stage, Reality Check | Real code, fixed rules, tested |
 | MAS Financial Institutions Directory / Investor Alert List | **Demo data with invented firms** (`data/demo_mas_*.json`) until a real dated snapshot is added. The site shows a demo banner and every MAS flag says "DEMO data" |
-| Community reports | **Synthetic**: 12 invented reports (`scripts/seed_reports.py`), labelled on screen |
+| Community reports | **Synthetic**: 12 invented reports (`backend/demo_seed.py`), labelled on screen |
 | Example offers and mock chats | Invented, labelled MOCK |
 | Domain age | Live RDAP lookup via rdap.org when deployed; fixtures in tests |
 | Accuracy figure | Not yet measured on a real set: see [Accuracy](#accuracy) |
@@ -107,21 +107,16 @@ written by someone else and modelled on real cases and real licensed-firm promot
 
 ## Deploy (Vercel)
 
-Step by step: [docs/DEPLOY.md](docs/DEPLOY.md).
-
-`vercel.json` builds the front end and routes `/api/*` to `api/index.py` (stdlib, no framework).
-Set **every** variable from `.env.example` in the Vercel dashboard. Community reports need Turso
-(`TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`) because Vercel's filesystem doesn't keep writes; seed it
-once by running `scripts.seed_reports` locally with those variables set. Checked against Vercel's docs (6 Oct): `api/index.py` exposes a `handler` class, which Vercel's
-Python runtime supports; the rewrite passes the route as `__route` so routing works either way. Still
-untested until the first deploy.
+Step by step: [docs/DEPLOY.md](docs/DEPLOY.md). It's dashboard-only: import the repo into Vercel,
+add Turso from the project's Storage tab (it sets `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`), and
+set `SEED_DEMO_REPORTS=1` so the synthetic reports are added on first start. `vercel.json` deploys two
+Services: the Vite front end, and the Python back end as a standard-library WSGI app (`backend/wsgi.py`).
 
 ## Layout
 
 ```
 backend/   api.py server.py pipeline.py extract.py code_extract.py schema.py prompt.py
            checks/ providers/ verdict.py playbook.py followups.py reality.py redact.py db.py community.py
-api/       index.py (Vercel entry)
 data/      demo MAS snapshots, benchmarks
 frontend/  React + Vite
 scripts/   seed_reports.py snapshot_mas.py run_accuracy.py
