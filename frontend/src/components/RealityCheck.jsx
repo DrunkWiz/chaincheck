@@ -9,7 +9,7 @@ function width(percent, max) {
 }
 
 export default function RealityCheck({ reality }) {
-  if (!reality) return null;
+  if (!reality?.claims?.length) return null;
   const rows = [
     ...reality.claims.map((c) => ({ label: `Promised: ${c.claimed}`, value: c.annual_percent, text: `${c.annual_text} a year`, color: "#A3241A" })),
     { label: "ChainCheck red line", value: reality.red_line_percent, text: `${reality.red_line_percent}% a year`, color: "#16211D" },
@@ -22,8 +22,7 @@ export default function RealityCheck({ reality }) {
       <h2>Reality Check</h2>
       <p>
         <strong>{first.claimed}</strong> works out to <strong>{first.annual_text} a year</strong>, compounded.
-        At that rate, $1,000 would become <strong>{first.thousand_becomes}</strong> in a year. No regulated
-        investment pays like that.
+        At that rate, $1,000 would become <strong>{first.thousand_becomes}</strong> in a year. This is the mathematical implication of the claim, not a prediction of actual returns.
       </p>
       <svg viewBox={`0 0 ${W} ${rows.length * ROW}`} style={{ maxWidth: 560 }} role="img"
         aria-label={rows.map((r) => `${r.label}: ${r.text}`).join("; ")}>

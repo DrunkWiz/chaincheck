@@ -5,8 +5,10 @@ async function request(method, path, body, headers = {}) {
       method,
       headers: body ? { "Content-Type": "application/json", ...headers } : headers,
       body: body ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(90000),
     });
-  } catch {
+  } catch (error) {
+    if (error.name === "TimeoutError") throw new Error("This is taking too long. Please try again.");
     throw new Error("Can't reach ChainCheck. Check your connection and try again.");
   }
   let data = {};

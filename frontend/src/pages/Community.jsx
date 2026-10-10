@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, OUTCOME_LABELS, SCAM_TYPE_LABELS } from "../api.js";
 
 function ReportCard({ report }) {
   const [helped, setHelped] = useState(report.helped);
   const [clicked, setClicked] = useState(false);
+  const [helpError, setHelpError] = useState("");
   const [expanded, setExpanded] = useState(false);
   const shown = expanded ? report.entities : report.entities.slice(0, 4);
   return (
@@ -38,25 +39,36 @@ function ReportCard({ report }) {
         </p>
       )}
       <button type="button" className="btn quiet" disabled={clicked}
-        onClick={() => { setClicked(true); setHelped(helped + 1); api.helped(report.id).catch(() => {}); }}>
-        This helped me {helped > 0 ? `(${helped})` : ""}
+        onClick={async () => {
+          setClicked(true); setHelpError("");
+          try { await api.helped(report.id); setHelped(n => n + 1); }
+          catch (e) { setClicked(false); setHelpError(e.message); }
+        }}>
+        {clicked ? "Thank you" : "This helped me"} {helped > 0 ? `(${helped})` : ""}
       </button>
+      {helpError && <p className="error" role="alert">{helpError}</p>}
     </article>
   );
 }
 
-export default function Community() {
+export default function Community({ meta }) {
   const [query, setQuery] = useState("");
   const [type, setType] = useState("");
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
 
-  function load(q = query, t = type) {
-    setError("");
-    api.reports(q, t).then(setData).catch((e) => setError(e.message));
+  const [loading, setLoading] = useState(true);
+  const [sort, setSort] = useState("recent");
+  const requestId = useRef(0);
+  async function load(q = query, t = type) {
+    const id = ++requestId.current;
+    setError(""); setLoading(true); setData(null);
+    try { const next = await api.reports(q, t); if (id === requestId.current) setData(next); }
+    catch (e) { if (id === requestId.current) setError(e.message); }
+    finally { if (id === requestId.current) setLoading(false); }
   }
 
-  useEffect(() => { load("", ""); }, []);
+  useEffect(() => { load("", ""); return () => { requestId.current += 1; }; }, []);
 
   return (
     <section>
@@ -64,8 +76,7 @@ export default function Community() {
         <p className="eyebrow">Community reports</p>
         <h1>What happened to others</h1>
         <p className="muted">
-          Real stories of what went wrong, with personal details removed and every report reviewed before it's
-          published. Search for a website, app, company or wallet you've been sent.
+          {meta?.demo ? "Explore invented reports that demonstrate how shared details link scam patterns." : "Explore reviewed reports of what went wrong, with personal details removed."} Search for a website, app, company or wallet you've been sent.
         </p>
         <form className="btn-row" role="search" onSubmit={(e) => { e.preventDefault(); load(); }}>
           <label className="sr-only" htmlFor="search">Search reports</label>
@@ -89,6 +100,7 @@ export default function Community() {
         </div>
         {error && <p className="error" role="alert">{error}</p>}
 
+        <div className="community-toolbar"><p role="status">{loading ? "Looking for reports…" : data ? `${data.reports.length} reports found` : "Reports unavailable"}</p><label className="sr-only" htmlFor="report-sort">Sort reports</label><select id="report-sort" value={sort} onChange={e => setSort(e.target.value)}><option value="recent">Newest first</option><option value="helpful">Most helpful</option><option value="linked">Most connected</option></select></div>
         <div className="community-layout">
           <aside className="alerts-area" aria-labelledby="alerts-heading">
             <h2 id="alerts-heading" className="h3">Network alerts</h2>
@@ -107,8 +119,8 @@ export default function Community() {
             ))}
           </aside>
           <div className="list-area">
-            {data && data.reports.length === 0 && <p>No reports match that yet.</p>}
-            {data?.reports.map((r) => <ReportCard key={r.id} report={r} />)}
+            {data && data.reports.length === 0 && <div className="empty-state"><h3>No matching reports</h3><p>Try a company name or fewer search terms. An empty result does not clear an offer.</p><button className="btn secondary" onClick={() => { setQuery(""); setType(""); load("", ""); }}>Clear filters</button></div>}
+            {(data ? [...data.reports].sort((a,b) => sort === "helpful" ? b.helped - a.helped : sort === "linked" ? b.network_size - a.network_size : 0) : []).map((r) => <ReportCard key={r.id} report={r} />)}
           </div>
           <aside className="extras-area">
             <div className="card">

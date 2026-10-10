@@ -53,6 +53,13 @@ function useShare(result) {
   return { status, showEvidence, setShowEvidence, copy, sendToFamily };
 }
 
+function downloadReport(result) {
+  const text = `CHAINCHECK — INVESTMENT OFFER CHECK\nChecked: ${result.data.checked_on}\nRecords: ${result.data.fid}; ${result.data.ial}\nRecords are dated snapshots and may be demo data. This is not a clearance to invest.\n\n${result.evidence_summary}\n\nFINDINGS\n${result.flags.map(f => `[${f.level.toUpperCase()}] ${f.title}\n${f.detail}\nRule: ${f.rule} | Source: ${f.source}`).join("\n\n")}\n\nNEXT STEPS\n${result.next_steps.map((s,i) => `${i+1}. ${s}`).join("\n")}\n\n${result.degraded ? "AI reader unavailable; fixed rules only.\n" : ""}ChainCheck cannot catch every scam and never establishes that an offer is safe.`;
+  const url = URL.createObjectURL(new Blob([text], {type: "text/plain;charset=utf-8"}));
+  const a = document.createElement("a"); a.href = url; a.download = "chaincheck-report.txt"; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function Summary({ result, share }) {
   const stop = result.verdict === "STOP";
   const top = result.flags.slice(0, 3); // reds come first
@@ -127,6 +134,7 @@ export default function Results({ result, onAnswer, busy }) {
 
   return (
     <div aria-live="polite">
+      <div className="report-tools"><button className="btn secondary" onClick={() => downloadReport(result)}>Download report ↓</button><button className="btn quiet" onClick={() => window.print()}>Print report</button><span className="tag">Checked {result.data.checked_on}</span></div>
       <div className={`verdict ${stop ? "stop" : "clear"}`} role="status">
         <div className="verdict-icon" aria-hidden="true">{stop ? "✕" : "?"}</div>
         <h2>{result.headline}</h2>

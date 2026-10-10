@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../api.js";
 import { readScreenshots } from "../ocr.js";
 import { EXAMPLES } from "../examples.js";
+import Icon from "../components/Icon.jsx";
+import ReturnExplorer from "../components/ReturnExplorer.jsx";
 import Results from "../components/Results.jsx";
 
 const scrollBehavior = () =>
@@ -67,283 +69,100 @@ function GuidedForm({ onSubmit, busy }) {
   );
 }
 
-export default function Check() {
+export default function Check({ meta }) {
   const [mode, setMode] = useState("paste");
   const [text, setText] = useState("");
-  const [reading, setReading] = useState(null); // OCR progress, or null
+  const [reading, setReading] = useState(null);
   const [answers, setAnswers] = useState({});
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [example, setExample] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
   const resultRef = useRef(null);
+  const inputRef = useRef(null);
   const lastRequest = useRef(null);
+  const sequence = useRef(0);
+  useEffect(() => () => { sequence.current += 1; }, []);
+  useEffect(() => {
+    if (!busy) return;
+    setElapsed(0);
+    const timer = setInterval(() => setElapsed(n => n + 1), 1000);
+    return () => clearInterval(timer);
+  }, [busy]);
 
+  function edit(value) { setText(value); setResult(null); setError(""); setExample(null); }
+  function useExample(ex) { edit(ex.text); setExample(ex.id); setMode("paste"); }
   async function run(payload) {
-    setBusy(true);
-    setError("");
+    const id = ++sequence.current;
+    setBusy(true); setError(""); setResult(null);
     try {
       const data = await api.analyze(payload);
+      if (id !== sequence.current) return;
       lastRequest.current = payload;
       setResult(data);
-      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: "start" }), 50);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
-    }
+      setTimeout(() => { resultRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: "start" }); resultRef.current?.focus({ preventScroll: true }); }, 60);
+    } catch (e) { if (id === sequence.current) setError(e.message); }
+    finally { if (id === sequence.current) setBusy(false); }
   }
-
-  async function onSubmit(e) {
+  function onSubmit(e) {
     e.preventDefault();
-    if (!text.trim()) {
-      setError("Paste the offer or add a screenshot first.");
-      return;
-    }
-    setAnswers({});
-    run({ text, answers: {} });
+    if (!text.trim()) { setError("Paste an offer, add a screenshot, or choose an example to get started."); inputRef.current?.focus(); return; }
+    setAnswers({}); run({ text, answers: {} });
   }
-
   function onAnswer(id, value) {
     const next = { ...answers, [id]: value };
-    setAnswers(next);
-    run({ ...lastRequest.current, answers: next });
+    setAnswers(next); run({ ...lastRequest.current, answers: next });
   }
-
-  async function onFiles(e) {
-    const picked = [...e.target.files].slice(0, MAX_FILES);
-    e.target.value = "";
+  async function onFiles(files) {
+    if (busy || reading) return;
+    const picked = Array.from(files || []);
     if (!picked.length) return;
-    if (picked.some((f) => !TYPES.includes(f.type) || f.size > MAX_BYTES)) {
-      setError("Screenshots must be PNG, JPEG or WebP, each under 10 MB.");
-      return;
-    }
-    setError("");
+    if (picked.length > MAX_FILES) { setError("Choose up to 4 screenshots at a time."); return; }
+    if (picked.some(f => !TYPES.includes(f.type) || f.size > MAX_BYTES)) { setError("Use PNG, JPEG or WebP screenshots, each under 10 MB."); return; }
+    setError(""); setResult(null);
     setReading({ index: 0, total: picked.length, stage: "loading", percent: null });
     try {
       const texts = await readScreenshots(picked, setReading);
-      const found = texts.map((t, i) => (t ? `[From screenshot: ${picked[i].name}]\n${t}` : "")).filter(Boolean);
-      if (!found.length) {
-        setError("We couldn't find any text in that screenshot. Try a clearer one, or paste the text instead.");
-        return;
-      }
-      setText((current) => [current.trim(), ...found].filter(Boolean).join("\n\n").slice(0, 20000));
-      if (found.length < texts.length) {
-        setError("We couldn't find text in some screenshots. The rest has been added.");
-      }
-    } catch {
-      setError("Couldn't load the screenshot reader. Check your connection, or paste the text instead.");
-    } finally {
-      setReading(null);
-    }
+      const found = texts.map((t, i) => t ? `[Screenshot ${i + 1}]\n${t}` : "").filter(Boolean);
+      if (!found.length) { setError("No text found. Try a clearer screenshot or paste the message."); return; }
+      setText(current => [current.trim(), ...found].filter(Boolean).join("\n\n").slice(0, 20000));
+      setMode("paste"); setExample(null);
+      if (found.length < texts.length) setError("Some screenshots had no readable text. Review the text added below.");
+    } catch { setError("The screenshot reader couldn't load. Try again or paste the message instead."); }
+    finally { setReading(null); }
   }
-
-  const readingText = reading && (reading.stage === "loading"
-    ? `Getting the screenshot reader ready${reading.percent != null ? ` (${reading.percent}%)` : ""}… The first time takes a moment.`
-    : `Reading screenshot ${reading.index + 1} of ${reading.total}… ${reading.percent}%`);
-
-  return (
-    <>
-      <section className="hero">
-        <div className="wrap wide hero-grid">
-          <div className="hero-intro">
-            <p className="eyebrow">Investment scam check for Singapore</p>
-            <h1>Someone offered you an investment. Check it before you pay.</h1>
-            <p className="muted hero-lede">
-              Paste the messages or add screenshots. We check every claim we can, show where you are in the
-              scam playbook, and tell you what they'll ask for next.
-            </p>
-            <ul className="hero-points">
-              <li>Checks MAS licence lists, copycat contact details, website age and the maths on returns</li>
-              <li>Fixed rules decide. The AI only reads the text, and can never mark anything safe</li>
-              <li>Screenshots are read on your device and never uploaded</li>
-            </ul>
-          </div>
-
+  const locked = busy || !!reading;
+  return <>
+    <section className="check-home">
+      <div className="wrap wide">
+        <div className="workspace-heading"><span className="section-kicker"><span className="live-dot"/> YOUR INVESTMENT SECOND OPINION</span><span className="region-label">Made for Singapore · SG</span></div>
+        <div className="intro-row"><div><h1>Before you invest,<br/><span>connect the dots.</span></h1><p className="intro-copy">A convincing story isn’t the whole story. Check the offer,<br className="desktop-break"/> uncover the warning signs, and see what could come next.</p></div><div className="intro-stamp"><Icon size={34}/><div><strong>Pause. Check. Protect.</strong><span>A little doubt is a good place to start.</span></div></div></div>
+        <div className="check-layout">
           <div className="checker">
+            <div className="checker-heading"><div className="number-icon">01</div><div><h2>Let’s look at the offer</h2><p>Start with what they sent you.</p></div><Icon name="search" size={26}/></div>
             <div className="mode-switch" role="group" aria-label="How do you want to check?">
-              <button type="button" className="chip" aria-pressed={mode === "paste"} onClick={() => setMode("paste")}>
-                Paste or add screenshots
-              </button>
-              <button type="button" className="chip" aria-pressed={mode === "guided"} onClick={() => setMode("guided")}>
-                Answer 3 questions
-              </button>
+              {[["paste", "text", "Paste text"], ["upload", "upload", "Screenshots"], ["guided", "book", "Guide me"]].map(([key, icon, label]) => <button key={key} type="button" className="chip" disabled={locked} aria-pressed={mode === key} onClick={() => { setMode(key); setError(""); }}><Icon name={icon} size={19}/>{label}</button>)}
             </div>
-
-            {mode === "paste" ? (
-              <form onSubmit={onSubmit}>
-                <label className="field" htmlFor="offer">What did the offer say?</label>
-                <textarea id="offer" value={text} onChange={(e) => setText(e.target.value)} maxLength={20000}
-                  placeholder="Paste the chat, ad or message here. Include names, links, numbers and how they want you to pay." />
-                <div className="checker-actions">
-                  <button className="btn" disabled={busy || !!reading}>{busy ? "Checking…" : "Check this offer"}</button>
-                  <label className={`btn quiet${reading ? " disabled" : ""}`} htmlFor="shots" aria-disabled={!!reading}>
-                    Add screenshots
-                    <input id="shots" type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={onFiles}
-                      disabled={!!reading} />
-                  </label>
-                </div>
-                <p role="status" aria-live="polite" className="small reading-status">{readingText}</p>
-                <p className="small muted hint">
-                  Screenshots (up to 4) are read on your device and never uploaded. Their text appears in the box,
-                  so you can remove anything personal first.
-                </p>
-                <div className="examples">
-                  <span className="small muted">Or try an invented example:</span>
-                  {EXAMPLES.map((ex) => (
-                    <button key={ex.id} type="button" className="chip" onClick={() => setText(ex.text)}>
-                      {ex.label}
-                    </button>
-                  ))}
-                </div>
-              </form>
-            ) : (
-              <GuidedForm busy={busy} onSubmit={(t, a) => { setAnswers(a); run({ text: t, answers: a }); }} />
-            )}
-            {error && <p className="error" role="alert" style={{ marginTop: 14 }}>{error}</p>}
-            <details className="privacy-note">
-              <summary>We don't store what you check. How your data is handled</summary>
-              <p>
-                To read it, we send the text (never your screenshots) to Google's Gemini AI, with phone numbers,
-                emails, NRIC and account numbers removed first. Google may use what it receives to improve its
-                products. Only stories you choose to share are kept, after review.
-              </p>
-            </details>
+            {mode === "guided" ? <GuidedForm busy={locked} onSubmit={(t,a) => { setAnswers(a); run({ text:t, answers:a }); }}/> : <form onSubmit={onSubmit}>
+              {mode === "upload" && <div className={`dropzone ${dragging ? "dragging" : ""}`} onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={e => { e.preventDefault(); setDragging(false); onFiles(e.dataTransfer.files); }}><Icon name="upload" size={36}/><h3>Drop the conversation here</h3><p>Up to 4 images · PNG, JPG or WebP · 10 MB each</p><label className="btn secondary upload-control">Choose screenshots<input aria-label="Choose screenshots" type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={locked} onChange={e => { onFiles(e.target.files); e.target.value=""; }}/></label><p className="small muted">Images stay on your device. Review the extracted text before checking.</p></div>}
+              {mode === "paste" && <><div className="field-top"><label className="field" htmlFor="offer">The message, pitch or promise</label>{text && <button type="button" className="text-action" disabled={locked} onClick={() => edit("")}>Clear</button>}</div><div className="offer-box"><textarea ref={inputRef} id="offer" value={text} disabled={locked} onChange={e => edit(e.target.value)} maxLength={20000} placeholder={'“Join our private investment group. Earn 2% every day with our AI trading platform…”\n\nPaste the full message here. Names, websites and payment details help us connect the dots.'}/><div className="textarea-meta"><span><Icon name="lock" size={14}/> Not saved by ChainCheck</span><span>{text.length.toLocaleString()} / 20,000</span></div></div><button className="btn analyze-button" disabled={locked}>{busy ? <><span className="spinner"/> Checking the offer…</> : <>Check this offer <Icon name="arrow"/></>}</button></>}
+            </form>}
+            {reading && <p className="notice" role="status">{reading.stage === "loading" ? "Preparing the screenshot reader…" : `Reading screenshot ${reading.index + 1} of ${reading.total} · ${reading.percent ?? 0}%`}</p>}
+            {busy && <p className="small muted" role="status">{elapsed < 8 ? "Reading the claims and checking for warning signs…" : "Still checking. External lookups can take a little longer…"} {elapsed}s</p>}
+            {error && <p className="error" role="alert">{error}</p>}
+            <details className="privacy-note"><summary><Icon name="lock" size={16}/> Your privacy, explained</summary><p>ChainCheck does not save your checks. Screenshots are read on your device. When available, Google’s Gemini reads the extracted text after phone numbers, emails, NRIC and account numbers are removed. Google may use that text to improve its products. Remove personal details before checking.</p></details>
           </div>
+          <aside className="check-sidebar">
+            <div className="insight-card"><span className="section-kicker">MORE THAN A YES OR NO</span><h2>Follow the whole chain.</h2><p>One convincing detail doesn’t make the rest add up.</p><ol className="check-capabilities">{[["search","Look beneath the claims","Firm records, contact details and website age."],["network","Spot the pattern","Payment requests, return promises and linked reports."],["shield","Know your next move","Understand the warning signs and what to do next."]].map(([icon,title,copy], i) => <li key={title}><span className="capability-icon"><Icon name={icon}/></span><div><strong>{title}</strong><p>{copy}</p></div><span className="step-index">0{i+1}</span></li>)}</ol><div className="insight-foot"><Icon name="check" size={17}/> Fixed rules decide. AI helps read.</div></div>
+            <a className="help-card" href="https://www.scamshield.gov.sg/" target="_blank" rel="noreferrer"><Icon name="alert"/><span><strong>Already sent money?</strong><span>Find support with ScamShield</span></span><Icon name="arrow"/></a>
+          </aside>
         </div>
-
-        <div className="wrap">
-          <div ref={resultRef} style={{ scrollMarginTop: 16 }}>
-            {result && <Results result={result} onAnswer={onAnswer} busy={busy} />}
-          </div>
-        </div>
-      </section>
-      {!result && <Landing />}
-    </>
-  );
-}
-
-const SIGNS = [
-  ["Returns that can't exist", "1% a day sounds small. It's over 3,600% a year."],
-  ["A name that's almost right", "Copycats use real firms' names with their own phone numbers and sites."],
-  ["An app from a link", "Scam platforms are installed from download links, not app stores."],
-  ["Cash, gold or crypto", "Real firms never send a courier or ask for crypto to a wallet."],
-  ["A small withdrawal that works", "They let you take a little out so you'll trust them with more."],
-  ["Paying to get your money out", "A \"withdrawal tax\" or unlock fee is the last trick, not a real charge."],
-];
-
-function Landing() {
-  return (
-    <>
-      <section>
-        <div className="wrap wide">
-          <div className="grid" style={{ alignItems: "start" }}>
-            <div>
-              <h2>What a check looks like</h2>
-              <p>
-                You get one clear answer, every link in the chain checked, and what the scammer will ask for next.
-              </p>
-              <p className="muted small">This example is invented and labelled MOCK.</p>
-            </div>
-            <div className="example-report" aria-label="Example report (MOCK)">
-              <span className="tag mock">MOCK example</span>
-              <div className="verdict stop">
-                <h2 style={{ fontSize: "1.8rem" }}>STOP. Don't send money.</h2>
-                <p className="summary">5 red flags, 2 claims we couldn't verify</p>
-              </div>
-              <div className="mini-links">
-                <div className="mini-link"><span>Merlion Crest Capital</span><span>✕ Copycat</span></div>
-                <div className="mini-link"><span>merlioncrest-capital[.]example</span><span>✕ 15 days old</span></div>
-                <div className="mini-link"><span>32% a month</span><span>✕ 2,698% a year</span></div>
-                <div className="mini-link"><span>Cash handover</span><span>✕ Red flag</span></div>
-              </div>
-              <div className="next-move" style={{ marginTop: 12 }}>
-                <strong>Next they'll ask:</strong> a "withdrawal tax" before you can take money out.
-              </div>
-              <div className="btn-row" style={{ marginTop: 12 }}>
-                <span className="btn stop" aria-hidden="true">Report on ScamShield</span>
-                <span className="btn secondary" aria-hidden="true">Send to family</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <div className="wrap wide">
-          <h2>How it works</h2>
-          <div className="grid">
-            <div className="card"><h3>1. You paste or upload</h3><p>The chat, the ad, the app screen. Screenshots are fine.</p></div>
-            <div className="card"><h3>2. AI reads, code decides</h3><p>The AI only pulls out names, links, numbers and payment requests. Fixed rules do every check.</p></div>
-            <div className="card"><h3>3. Every link is checked</h3><p>MAS licence lists, copycat contact details, website age, the maths on returns, how they want paying.</p></div>
-            <div className="card"><h3>4. You see what's next</h3><p>Where you are in the scam playbook, and what they'll ask for next.</p></div>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <div className="wrap wide">
-          <h2>Use ScamShield and ChainCheck together</h2>
-          <div className="together">
-            <div className="card">
-              <h3>ScamShield protects the inbox</h3>
-              <p>It catches scam calls, texts and links that have been seen before. Use it for anything suspicious that reaches your phone.</p>
-              <a href="https://www.scamshield.gov.sg/" target="_blank" rel="noreferrer">Go to ScamShield ↗</a>
-            </div>
-            <div className="card">
-              <h3>ChainCheck protects the wallet</h3>
-              <p>It's built for investment offers, which rename themselves every few weeks. It checks whether the claims add up, even the first time.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <div className="wrap wide">
-          <div className="card">
-            <div className="stat">41.4%</div>
-            <p style={{ fontSize: "1.2rem", fontWeight: 700, marginTop: 10 }}>
-              of Singapore's scam losses in the first half of 2026 were investment scams: $169.8 million of
-              $410.6 million.
-            </p>
-            <p className="small muted" style={{ margin: 0 }}>
-              Source: Singapore Police Force, mid-year scam and cybercrime brief, August 2026. Share calculated
-              by ChainCheck from the two totals.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <div className="wrap wide">
-          <h2>Six warning signs</h2>
-          <ol className="signs">
-            {SIGNS.map(([t, d]) => <li key={t}><strong>{t}.</strong> {d}</li>)}
-          </ol>
-        </div>
-      </section>
-
-      <section>
-        <div className="wrap wide">
-          <div className="card">
-            <h2>Has this happened to you?</h2>
-            <p>Read what others went through, and see when "different" platforms turn out to be one group.</p>
-            <div className="btn-row">
-              <a className="btn" href="#/community">Read community reports</a>
-              <a className="btn secondary" href="#/share">Share your story</a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <div className="wrap wide">
-          <div className="band">
-            <h2>Worried about a parent?</h2>
-            <p>Check the offer together, then send them the result. It's evidence, not your opinion.</p>
-            <a className="btn" href="#/learn">Learn the signs together</a>
-          </div>
-        </div>
-      </section>
-    </>
-  );
+        <div className="example-strip"><div><span className="section-kicker">TAKE IT FOR A TEST RUN</span><p>No message handy? Try an invented example.</p></div><div className="example-options">{EXAMPLES.map((ex, i) => <button key={ex.id} type="button" disabled={locked} aria-pressed={example === ex.id} onClick={() => useExample(ex)}><Icon name={["network","text","book"][i]}/><span>{["The copycat firm","The AI trading group","The broker promotion"][i]}<small>MOCK EXAMPLE</small></span><Icon name="arrow" size={18}/></button>)}</div></div>
+        <div ref={resultRef} tabIndex={-1} className="result-anchor">{result && <><div className="report-heading"><div><p className="eyebrow">YOUR CHECK, EXPLAINED</p><h2>Here’s what we found.</h2></div><button className="btn quiet" onClick={() => { setResult(null); setText(""); setExample(null); setAnswers({}); setMode("paste"); window.scrollTo({top:0,behavior:scrollBehavior()}); }}>Start a new check <Icon name="arrow"/></button></div>{meta?.demo && <p className="notice">Demo report: firm records and community reports are invented. Do not use this as a real investment decision.</p>}<Results result={result} onAnswer={onAnswer} busy={busy}/></>}</div>
+        {!result && <><ReturnExplorer/><div className="learn-banner"><div><p className="eyebrow">SAME PLAYBOOK. DIFFERENT NAMES.</p><h2>Learn to spot the next move.</h2><p>The friendly introduction. The small win. The bigger ask.<br/>Get familiar with the pattern before you’re part of it.</p><a className="btn" href="#/learn">Explore the scam playbook <Icon name="arrow"/></a></div><div className="playbook-preview" aria-label="Common scam sequence"><span>01 <b>The introduction</b></span><span>02 <b>The small win</b></span><span className="danger-step">03 <b>The bigger ask</b><Icon name="alert" size={18}/></span><span>04 <b>The withdrawal fee</b></span></div></div></>}
+      </div>
+    </section>
+  </>;
 }

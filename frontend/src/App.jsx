@@ -27,6 +27,7 @@ export default function App() {
   useEffect(() => {
     const onHash = () => {
       setRoute(currentRoute());
+      setMenuOpen(false);
       window.scrollTo(0, 0);
     };
     window.addEventListener("hashchange", onHash);
