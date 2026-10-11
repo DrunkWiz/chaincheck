@@ -48,11 +48,20 @@ export async function readScreenshots(files, onProgress) {
   return texts;
 }
 
-function cleanUp(text) {
-  return text
-    .split("\n")
-    .map((line) => line.replace(/\s+/g, " ").trim())
-    .filter((line, i, lines) => line || (i > 0 && lines[i - 1]))
-    .join("\n")
-    .trim();
+const TIMESTAMP = /^\d{1,2}[:.]\d{2}\s?(am|pm)?(\s?\S{0,3})?$/i;
+const SENTENCE_END = /[.!?:)]$/;
+
+/** Tidy OCR output: drop bare timestamps and rejoin lines that a chat bubble wrapped,
+ *  so "earned 32%" / "per month" reads as one claim for the checker. */
+export function cleanUp(text) {
+  const lines = text.split("\n").map((line) => line.replace(/\s+/g, " ").trim());
+  const out = [];
+  for (const line of lines) {
+    if (TIMESTAMP.test(line)) continue;
+    const prev = out[out.length - 1];
+    const continues = prev && line && !SENTENCE_END.test(prev) && /^[a-z0-9%$(]/.test(line);
+    if (continues) out[out.length - 1] = `${prev} ${line}`;
+    else if (line || (prev !== undefined && prev !== "")) out.push(line);
+  }
+  return out.join("\n").trim();
 }
