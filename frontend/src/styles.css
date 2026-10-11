@@ -5,7 +5,7 @@
   --stop: #a3241a; --stop-soft: #fff3f0; --amber: #b45309; --amber-text: #7a4206; --amber-soft: #fff8e9;
   --radius: 18px; --radius-control: 10px; --space-section: 48px;
   --body: "Atkinson Hyperlegible", system-ui, sans-serif; --heading: var(--body);
-  --text-body: 18px; --text-small: 16px; --text-label: 13px;
+  --text-body: 18px; --text-small: 18px; --text-label: 13px; /* CLAUDE.md: body text >= 18px; labels are short uppercase tags */
   color-scheme: light;
 }
 * { box-sizing: border-box; }
@@ -63,6 +63,7 @@ details[open] > summary::before { transform: rotate(90deg); }
 .site-footer { margin-top: var(--space-section); padding: 32px 0; border-top: 1px solid var(--line); background: #eef1e9; color: var(--ink-soft); font-size: var(--text-small); }
 .site-footer p { max-width: 100ch; }
 .site-footer p:last-child { margin: 0; }
+.site-footer a { padding-block: 14px; }
 
 /* One set of controls for the checker, community and contribution form. */
 .btn,.chip { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border: 1px solid var(--accent); border-radius: var(--radius-control); padding: 10px 18px; background: var(--accent); color: white; text-decoration: none; font-weight: 700; line-height: 1.4; text-align: center; }
@@ -129,14 +130,14 @@ legend { font-weight: 700; margin-bottom: 8px; }
 .number-icon,.capability-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; border-radius: var(--radius-control); background: var(--accent-soft); color: var(--accent); }
 .number-icon { font-size: var(--text-small); font-weight: 700; }
 .mode-switch { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 4px; padding: 5px; margin-bottom: 20px; border-radius: var(--radius-control); background: var(--ground); }
-.mode-switch .chip { padding: 8px 6px; border: 0; background: transparent; border-radius: 7px; }
+.mode-switch .chip { padding: 8px 2px; border: 0; background: transparent; border-radius: 7px; }
 .mode-switch .chip[aria-pressed="true"] { background: var(--surface); color: var(--accent); box-shadow: 0 1px 4px #203d2914; }
 .field-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .field-top label { margin: 0; }
 .offer-box { border: 1px solid #ccd6c8; border-radius: var(--radius-control); background: #fcfdfb; overflow: hidden; }
 .offer-box:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
 .offer-box textarea { border: 0; background: transparent; padding: 16px; min-height: 190px; outline: none; }
-.textarea-meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; padding: 8px 16px 12px; font-size: var(--text-label); color: var(--ink-soft); }
+.textarea-meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; padding: 8px 16px 12px; font-size: var(--text-small); color: var(--ink-soft); }
 .textarea-meta > span:first-child { display: flex; align-items: center; gap: 6px; }
 .analyze-button { width: 100%; min-height: 54px; margin-top: 16px; gap: 16px; }
 .privacy-note { margin-top: 18px; padding-top: 8px; border-top: 1px solid var(--line); color: var(--ink-soft); }
@@ -366,6 +367,7 @@ blockquote { margin: 12px 0; padding: 8px 16px; border-left: 3px solid var(--lin
   .checker-heading p,.checker-heading > svg,.number-icon { display: none; }
   .checker-heading h2 { font-size: 22px; margin: 0; }
   .mode-switch { margin-bottom: 16px; }
+  .mode-switch .chip { font-size: 16px; } /* three tab labels share one row */
   .mode-switch .chip svg { display: none; }
   .offer-box textarea { min-height: 140px; }
   .analyze-button { margin-top: 12px; }
