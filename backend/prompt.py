@@ -39,6 +39,9 @@ payment:   [{{"method": one of {list(schema.PAYMENT_METHODS)}, "quote": str}}]
 events:    [{{"signal": one of {list(schema.EVENT_SIGNALS)}, "quote": str}}]
 concerns:  [{{"text": str, "reason": str}}]   wording that worries you and no field above covers
 
+Personal details were removed before you see the offer and replaced with [EMAIL],
+[PHONE], [NRIC], [ACCOUNT] or [NAME]. Never extract those placeholders as values.
+
 "quote" is the exact words from the offer. Do not judge whether the offer is
 genuine; another system does that. Never describe anything as safe, verified
 or legitimate."""

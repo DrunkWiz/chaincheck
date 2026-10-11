@@ -15,7 +15,7 @@ from backend.checks import Context, domain, mas, network, payment, people, retur
 from backend.extract import cached_extract
 from backend.flags import AMBER, RED
 from backend.providers.base import ProviderError
-from backend.redact import for_model, scrub_display
+from backend.redact import drop_placeholders, for_model, scrub_display
 
 
 @dataclass
@@ -72,7 +72,7 @@ def analyze(offer_text, provider, ctx=None, answers=None):
     if provider is not None and text:
         try:
             extracted = cached_extract(for_model(text), provider)
-            model_entities = extracted.entities
+            model_entities = drop_placeholders(extracted.entities)
             if extracted.discarded:
                 # Field names and reasons only, never message content.
                 print(f"ChainCheck: model output had {len(extracted.discarded)} invalid part(s): "

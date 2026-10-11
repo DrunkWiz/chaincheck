@@ -62,6 +62,23 @@ def redact(text, names=()):
     return _restore(new, wallets), counts
 
 
+PLACEHOLDER = re.compile(r"\[(EMAIL|PHONE|NRIC|ACCOUNT|NAME)\]", re.IGNORECASE)
+
+# Entity fields whose values identify something; a placeholder there is not a real value.
+_IDENTIFYING = {"companies": None, "domains": None, "phones": None, "emails": None, "wallets": None,
+                "people": "name", "apps": "name", "accounts": "number"}
+
+
+def drop_placeholders(entities):
+    """Remove model-extracted values that are only redaction placeholders, e.g. an email of
+    "[EMAIL]". Code reads the real values from the original text."""
+    out = dict(entities)
+    for field, key in _IDENTIFYING.items():
+        out[field] = [item for item in entities.get(field, [])
+                      if not PLACEHOLDER.search(item if key is None else (item.get(key) or ""))]
+    return out
+
+
 def for_model(text):
     """What the model is allowed to see. Phones, emails, NRIC/FIN, account numbers and
     "my name is ..." are removed: code extracts those from the original text, so the

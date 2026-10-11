@@ -63,3 +63,28 @@ def test_pipeline_sends_redacted_text_but_still_flags_phones():
     result = analyze("Merlion Crest Capital, call +65 8000 4321", provider, make_ctx())
     assert "8000" not in seen[0]
     assert "copycat.contact_mismatch" in {f.rule for f in result.flags}  # phone still checked by code
+
+
+def test_model_placeholder_values_are_dropped_and_cannot_flag_a_licensed_firm():
+    """Found live: the model extracted "[EMAIL]" as an email, which raised a copycat flag
+    on a licensed firm's ordinary notice."""
+    import json
+    from backend.pipeline import analyze
+    from backend.providers.fake import FakeProvider
+    from tests.conftest import make_ctx
+    text = ("Harbourview Securities Pte. Ltd.: our AGM is on 28 Oct. Details at harbourview-securities.example. "
+            "Investor relations: ir@harbourview-securities.example.")
+    reply = json.dumps({"companies": ["Harbourview Securities Pte. Ltd."], "emails": ["[EMAIL]"],
+                        "phones": ["[PHONE]"], "people": [{"name": "[NAME]", "claimed_title": "analyst"}]})
+    result = analyze(text, FakeProvider(reply), make_ctx())
+    assert result.verdict == "NO_RED_FLAGS"
+    from backend.redact import PLACEHOLDER
+    assert not any(PLACEHOLDER.search(n["label"]) for n in result.chain)
+
+
+def test_drop_placeholders_keeps_real_values():
+    from backend.redact import drop_placeholders
+    e = drop_placeholders({"emails": ["[EMAIL]", "a@b.example"], "companies": ["Acme", "[name] Pte Ltd"],
+                           "accounts": [{"bank": None, "number": "[ACCOUNT]"}], "returns": [{"percent": 5}]})
+    assert e["emails"] == ["a@b.example"] and e["companies"] == ["Acme"] and e["accounts"] == []
+    assert e["returns"] == [{"percent": 5}]
