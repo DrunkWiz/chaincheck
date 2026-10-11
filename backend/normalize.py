@@ -66,9 +66,14 @@ def secret():
     value = os.environ.get("PHONE_HMAC_SECRET")
     if value:
         return value
-    if os.environ.get("VERCEL"):
-        raise ConfigError("PHONE_HMAC_SECRET must be set in the Vercel dashboard")
+    if is_hosted():
+        raise ConfigError("PHONE_HMAC_SECRET must be set in the hosting dashboard")
     return _DEV_SECRET
+
+
+def is_hosted():
+    """True on a hosting platform, where dev fallbacks must never be used."""
+    return bool(os.environ.get("VERCEL") or os.environ.get("RENDER"))
 
 
 def keyed_hash(value, key=None):

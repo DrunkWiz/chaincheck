@@ -37,7 +37,11 @@ class App:
             if os.environ.get("SEED_DEMO_REPORTS") == "1":
                 # First start on a fresh database: add the labelled synthetic reports.
                 from backend.demo_seed import seed_if_empty
-                seed_if_empty(db, pipeline.make_context(rdap=lambda _domain: None), self.secret)
+                try:
+                    seed_if_empty(db, pipeline.make_context(rdap=lambda _domain: None), self.secret)
+                except normalize.ConfigError as exc:
+                    # Seed reports contain phone numbers, which need the secret. Run without them.
+                    print(f"ChainCheck: demo reports not seeded: {exc}", file=sys.stderr)
             self._db = db
         return self._db
 

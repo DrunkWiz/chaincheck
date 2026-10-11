@@ -150,3 +150,26 @@ def test_app_does_not_seed_unless_asked(monkeypatch, tmp_path):
     monkeypatch.delenv("SEED_DEMO_REPORTS", raising=False)
     app = App(provider_factory=lambda: None, context_factory=context_factory(), secret=SECRET)
     assert app.handle("GET", "/api/reports", "", b"", {})[1]["reports"] == []
+
+
+def test_render_counts_as_hosted_for_the_secret(monkeypatch):
+    from backend import normalize
+    monkeypatch.delenv("PHONE_HMAC_SECRET", raising=False)
+    monkeypatch.delenv("VERCEL", raising=False)
+    monkeypatch.setenv("RENDER", "true")
+    with pytest.raises(normalize.ConfigError):
+        normalize.secret()
+
+
+def test_missing_secret_skips_seeding_but_checks_still_work(monkeypatch, tmp_path, capsys):
+    monkeypatch.delenv("TURSO_DATABASE_URL", raising=False)
+    monkeypatch.delenv("VERCEL", raising=False)
+    monkeypatch.delenv("PHONE_HMAC_SECRET", raising=False)
+    monkeypatch.setenv("RENDER", "true")
+    monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "render.sqlite3"))
+    monkeypatch.setenv("SEED_DEMO_REPORTS", "1")
+    app = App(provider_factory=lambda: None, context_factory=context_factory(), secret=None)
+    assert post(app, "/api/analyze", {"text": "Earn 3% per day"})[0] == 200
+    status, body = app.handle("GET", "/api/reports", "", b"", {})
+    assert status == 200 and body["reports"] == []
+    assert "not seeded" in capsys.readouterr().err

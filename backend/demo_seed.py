@@ -8,7 +8,7 @@ SEED_DEMO_REPORTS=1; `python -m scripts.seed_reports` does the same locally.
 
 import hashlib
 
-from backend import community, pipeline
+from backend import community, normalize, pipeline
 
 W1 = "0x4b2e9f1a7c3d5e8b0a6f2c4d9e1b3a5c7d8e0f2a"
 W2 = "0x9c1d3e5f7a2b4c6d8e0f1a3b5c7d9e2f4a6b8c0d"
@@ -59,6 +59,8 @@ SYNTHETIC_REPORTS = [
 def seed(db, ctx=None, secret=None):
     """Add the synthetic reports. Safe to run twice or concurrently: each report's id
     comes from its story, so a second run inserts nothing new."""
+    if secret is None:
+        normalize.secret()  # fail before inserting anything: several reports contain phone numbers
     ctx = ctx or pipeline.make_context(rdap=lambda _domain: None)
     ids = []
     for scam_type, outcome, story in SYNTHETIC_REPORTS:

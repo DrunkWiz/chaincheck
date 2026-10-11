@@ -83,8 +83,10 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     port = int(os.environ.get("PORT", "8000"))
-    print(f"ChainCheck API on http://localhost:{port}")
-    ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()
+    # Hosts like Render route traffic in from outside the container; locally, stay private.
+    host = os.environ.get("HOST") or ("0.0.0.0" if os.environ.get("RENDER") else "127.0.0.1")
+    print(f"ChainCheck on http://{'localhost' if host == '127.0.0.1' else host}:{port}")
+    ThreadingHTTPServer((host, port), Handler).serve_forever()
 
 
 if __name__ == "__main__":
