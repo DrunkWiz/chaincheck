@@ -87,10 +87,11 @@ APP_FROM_LINK = re.compile(
     r"\.apk\b|testflight|\b(?:not|isn't|isnt|is not)\s+(?:on|in|available\s+(?:on|in))\s+(?:the\s+)?(?:app store|google play|play store)"
     r"|\b(?:install|download)\w*\b[^.\n]{0,30}\bfrom\s+(?:this|the|our|a)\s+(?:link|website|site)\b", _I)
 
+# Most specific first: "chief strategist Dr Wendy Lim" keeps "chief strategist", not "Doctor".
 TITLED_PEOPLE = (
-    (re.compile(r"\b(Prof(?:essor)?\.?|Dr\.?)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})"), None),
     (re.compile(r"\b((?i:(?:senior |chief |head )?(?:analyst|fund manager|portfolio manager|strategist|trading mentor)))\s+"
                 r"(?:Mr|Ms|Mrs|Mdm|Dr)\.?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)"), "title_first"),
+    (re.compile(r"\b(Prof(?:essor)?\.?|Dr\.?)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})"), None),
 )
 COMPANY_SUFFIXED = re.compile(
     r"\b((?:[A-Z][\w&'-]*[ \t]+){0,4}[A-Z][\w&'-]*)[ \t]+(Pte\.?[ \t]*Ltd\.?|Private Limited)")

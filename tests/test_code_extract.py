@@ -137,3 +137,8 @@ def test_model_cannot_remove_code_entities():
     merged = merge(entities(), code)
     for field, items in code.items():
         assert merged[field] == items
+
+
+def test_descriptive_title_beats_honorific():
+    people = ex("Our chief strategist Dr Wendy Lim will speak.")["people"]
+    assert people == [{"name": "Wendy Lim", "claimed_title": "chief strategist"}]
