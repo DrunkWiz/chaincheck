@@ -427,3 +427,21 @@ Needs Nathan:
   `tests/fixtures/accuracy_set/` is a regression guard, not a figure to quote.
 - Decide whether claimed titles, licensed names without contact details, and promo sites off the MAS
   record should stay amber/red: they cause most false alarms on legitimate promotions.
+
+## 21. Decisions, 11 Oct
+
+- **Hosting:** Render free web service (Singapore), one Python service serving API and front end.
+  SQLite on the free plan's temporary disk; synthetic reports re-seed on each start; shared stories
+  don't survive a sleep or restart unless Turso is configured.
+- **Claimed titles (§7):** amber, except when a licensed firm's given contact details all match its
+  MAS record and no company check fired; then a "Check these yourself" item (Register of
+  Representatives), not a flag. Kept unchanged: licensed name with no contact details (amber) and a
+  website not on the firm's MAS record (red), because both are how copycats operate.
+- **OCR:** wrapped chat lines are rejoined and bare timestamps dropped. On an invented
+  WhatsApp-style screenshot, the check matches the same chat pasted as text.
+- **Accuracy (§12):** no independent set exists, so **quote no accuracy figure**. The invented set
+  stays a regression guard (code-only: 19/20 scams stopped, 2/20 false alarms) and can be run against
+  the live site with `--api` to compare Gemini against fixed rules.
+- **Real MAS lists:** not used. MAS's terms forbid republishing site content without written
+  permission, and neither list is published as an open dataset or API. The demo keeps invented,
+  labelled data; a permission request to MAS is drafted in `submission/` (local only).

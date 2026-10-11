@@ -1,13 +1,53 @@
 # Deploy runbook
 
-From nothing to a live ChainCheck on Vercel. Everything is done in web dashboards: no Turso CLI and
-no local seeding. Takes about 20 minutes, and nothing needs a card (Vercel Hobby, Turso free plan via
-Vercel, Gemini free tier).
+**Current deployment: Render**, service `chaincheck` in "My Workspace", Singapore region, free plan:
+https://chaincheck-dxj5.onrender.com (dashboard: https://dashboard.render.com/web/srv-db5d4jflot8c73ehqrrg).
+It auto-deploys every push to `master`. The Vercel route below still works as an alternative.
 
-Button names in dashboards change from time to time. If one doesn't match, look for the nearest
-equivalent.
+## Render (current)
+
+One Python web service builds the front end and serves it with the API (`backend/server.py`).
+
+| Setting | Value |
+|---|---|
+| Build command | `pip install -r requirements.txt && cd frontend && npm ci && npm run build` |
+| Start command | `python -m backend.server` (listens on `0.0.0.0:$PORT` when `RENDER` is set) |
+| `SEED_DEMO_REPORTS` | `1` |
+| `GEMINI_MODEL` / `GEMINI_FALLBACK_MODEL` | `gemini-3.5-flash` / `gemini-3.5-flash-lite` |
+| `PHONE_HMAC_SECRET` | add in **Environment**, use **Generate** |
+| `ADMIN_TOKEN` | add in **Environment**, use **Generate**, keep a copy for `/#/admin` |
+| `GEMINI_API_KEY` | add in **Environment**: your free Google AI Studio key |
+
+Saving environment variables redeploys the service.
+
+**Free-plan limits to know:**
+
+- The service sleeps after 15 minutes without traffic and takes about a minute to wake. Open the
+  site a minute before a demo or judging slot.
+- The disk is temporary: the SQLite database is wiped when the service sleeps, restarts or
+  redeploys. The 12 synthetic reports are re-added automatically on the next start, but **shared
+  stories are lost**. For persistence, add Turso (`TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`) and
+  redeploy; the app uses it automatically.
+- Without `PHONE_HMAC_SECRET`, offers containing phone numbers get "isn't fully set up yet" and the
+  demo reports aren't seeded. The app never falls back to the dev secret on Render.
+
+**Check it after a deploy:**
+
+```bash
+curl https://chaincheck-dxj5.onrender.com/api/meta
+```
+
+```bash
+python -m scripts.run_accuracy --api https://chaincheck-dxj5.onrender.com
+```
+
+The second runs the 40 invented offers through the live site and reports how many were answered by
+fixed rules only (Gemini unavailable). Render's **Logs** tab shows "AI reader unavailable" with the
+error type, or "model output had N invalid part(s)" with field names. Message text is never logged.
 
 ---
+
+## Vercel (alternative)
 
 ## 1. Make two secrets
 

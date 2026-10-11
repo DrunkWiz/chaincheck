@@ -100,17 +100,15 @@ that returns empty, hostile output; the verdict must not change.
 ```
 
 `tests/fixtures/accuracy_set/` has 20 scam and 20 legitimate **invented** offers. Code-only mode
-currently stops 19 of 20 scams with 4 false alarms on 20 legitimate offers. **Don't quote this
+currently stops 19 of 20 scams with 2 false alarms on 20 legitimate offers. **Don't quote this
 number**: the set was written by the same person as the rules. Before freeze, replace it with offers
 written by someone else and modelled on real cases and real licensed-firm promotions, run it with
 `--mode live`, and quote only that result with its size.
 
-## Deploy (Vercel)
+## Deploy
 
-Step by step: [docs/DEPLOY.md](docs/DEPLOY.md). It's dashboard-only: import the repo into Vercel,
-add Turso from the project's Storage tab (it sets `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`), and
-set `SEED_DEMO_REPORTS=1` so the synthetic reports are added on first start. `vercel.json` deploys two
-Services: the Vite front end, and the Python back end as a standard-library WSGI app (`backend/wsgi.py`).
+Live (free plan, Render): https://chaincheck-dxj5.onrender.com. It auto-deploys from `master`.
+Step by step, including the Vercel alternative: [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Layout
 
