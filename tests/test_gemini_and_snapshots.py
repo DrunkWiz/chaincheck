@@ -81,4 +81,4 @@ def test_accuracy_set_runs_offline():
     assert (report["scams"], report["legit"]) == (20, 20)
     # Regression floor for code-only mode, not a claim. Update when rules change.
     assert report["hits"] >= 19
-    assert report["false_alarms"] <= 4
+    assert report["false_alarms"] <= 2

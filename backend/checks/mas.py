@@ -47,4 +47,5 @@ def check(entities, ctx):
                 "investments in Singapore must be licensed or exempt.",
                 ctx.fid.label, "company", name, ctx.fid.date,
             ))
+    ctx.company_flagged = bool(flags)
     return flags

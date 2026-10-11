@@ -320,3 +320,48 @@ class TestNetwork:
         keys = network.entity_keys(entities(companies=["Telegram"], apps=[{"name": "App installed from a link", "source": "link"}],
                                             domains=["t.me"]))
         assert keys == []
+
+
+class TestClaimedTitleContext:
+    """A claimed title is amber, unless a licensed firm's contacts all check out
+    and no company flag fired; then it's a check-it-yourself item."""
+
+    def run(self, **fields):
+        from backend.pipeline import run_checks
+        ctx = make_ctx()
+        flags = run_checks(entities(people=[{"name": "Wendy Lim", "claimed_title": "chief strategist"}], **fields), [], ctx)
+        return rules(flags), ctx.verify_yourself
+
+    def test_matched_licensed_firm_turns_title_into_verify_item(self):
+        found, verify = self.run(companies=["Harbourview Securities Pte. Ltd."],
+                                 domains=["harbourview-securities.example"], phones=["+65 6000 0101"])
+        assert "person.claimed_title" not in found
+        assert len(verify) == 1 and "Register of Representatives" in verify[0]
+
+    def test_title_stays_amber_with_no_firm(self):
+        found, verify = self.run()
+        assert "person.claimed_title" in found and verify == []
+
+    def test_title_stays_amber_for_a_copycat(self):
+        found, _ = self.run(companies=["Harbourview Securities"], phones=["+65 8000 9999"])
+        assert {"person.claimed_title", "copycat.contact_mismatch"} <= set(found)
+
+    def test_title_stays_amber_when_no_contacts_were_given(self):
+        found, _ = self.run(companies=["Harbourview Securities"])
+        assert "person.claimed_title" in found
+
+    def test_title_stays_amber_when_another_company_is_flagged(self):
+        found, _ = self.run(companies=["Harbourview Securities", "Golden Lotus Wealth"],
+                            domains=["harbourview-securities.example"])
+        assert {"person.claimed_title", "mas.not_licensed"} <= set(found)
+
+
+def test_verify_items_reach_the_result_and_evidence():
+    from backend.pipeline import analyze
+    text = ("Harbourview Securities Pte. Ltd. webinar: our chief strategist Dr Wendy Lim on the market outlook. "
+            "Register at harbourview-securities.example.")
+    result = analyze(text, None, make_ctx())
+    assert result.verdict == "NO_RED_FLAGS"
+    out = result.to_dict()
+    assert out["verify_yourself"] and "Wendy Lim" in out["verify_yourself"][0]
+    assert "Check these yourself:" in out["evidence_summary"]

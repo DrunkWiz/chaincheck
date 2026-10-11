@@ -22,3 +22,7 @@ class Context:
     on_record_domains: set = field(default_factory=set)
     on_record_phones: set = field(default_factory=set)
     copycat_of: set = field(default_factory=set)   # licensed firm keys flagged as copied
+    matched_firms: set = field(default_factory=set)  # licensed firms whose given contacts all match MAS
+    company_flagged: bool = False                     # any company check raised a flag
+    # Things to check yourself that aren't flags (they don't change the verdict).
+    verify_yourself: list = field(default_factory=list)

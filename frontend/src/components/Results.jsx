@@ -94,6 +94,14 @@ function Summary({ result, share }) {
           {result.next_steps.slice(0, 2).map((s) => <li key={s}>{s}</li>)}
         </ul>
       )}
+      {result.verify_yourself?.length > 0 && (
+        <div className="verify-yourself">
+          <h3 className="h3">Check these yourself</h3>
+          <ul className="steps">
+            {result.verify_yourself.map((v) => <li key={v}>{v}</li>)}
+          </ul>
+        </div>
+      )}
       <div className="actions">
         {stop && (
           <a className="btn stop" href={result.scamshield_url} target="_blank" rel="noreferrer">

@@ -60,6 +60,7 @@ def check(name, firm, entities, snapshot, ctx):
             "to compare with its MAS record. Contact the firm only through the details on MAS's register.",
             snapshot.label, "company", name, snapshot.date,
         )]
+    ctx.matched_firms.add(firm.key)  # contacts were given and all are on the firm's MAS record
     return []
 
 

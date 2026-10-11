@@ -30,6 +30,7 @@ class Result:
     questions: list
     next_steps: list
     degraded: bool
+    verify_yourself: list
     data: dict
     entities: dict = field(repr=False, default_factory=dict)
 
@@ -43,6 +44,7 @@ class Result:
             "counts": self.counts, "flags": [f.to_dict() for f in self.flags], "chain": self.chain,
             "stage": self.stage, "reality": self.reality, "questions": self.questions,
             "incomplete": self.incomplete, "next_steps": self.next_steps, "degraded": self.degraded,
+            "verify_yourself": self.verify_yourself,
             "data": self.data, "evidence_summary": evidence_summary(self),
             "scamshield_url": "https://www.scamshield.gov.sg/",
         }
@@ -88,6 +90,7 @@ def analyze(offer_text, provider, ctx=None, answers=None):
         reality=reality.reality_check(entities),
         questions=followups.questions_for(entities, answers),
         next_steps=decided["next_steps"], degraded=degraded,
+        verify_yourself=[scrub_display(v) for v in ctx.verify_yourself],
         data={"fid": ctx.fid.label, "ial": ctx.ial.label, "demo": ctx.fid.demo or ctx.ial.demo,
               "checked_on": ctx.today.isoformat()},
         entities=entities,
@@ -188,6 +191,8 @@ def evidence_summary(result):
         lines.append(f"[{marker}] {f.title}")
         lines.append(f"    {f.detail}")
         lines.append(f"    Source: {f.source}")
+    if result.verify_yourself:
+        lines += ["", "Check these yourself:"] + [f"- {v}" for v in result.verify_yourself]
     if result.stage:
         lines += ["", f"Scam playbook stage {result.stage['number']} of 7: {result.stage['name']}.",
                   f"What they'll likely ask next: {result.stage['next_move']}"]
