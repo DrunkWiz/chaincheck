@@ -1,9 +1,30 @@
 {
-  "snapshot_date": "2026-10-05",
-  "source": "DEMO: invented entries for the ChainCheck demo. NOT MAS data.",
-  "entries": [
-    {"name": "QuantEdge AI", "websites": ["quantedge-ai.example"]},
-    {"name": "AlphaGain Pro", "websites": ["alphagain-pro.example"]},
-    {"name": "Orchid Prime Markets", "websites": ["orchidprime.example"]}
-  ]
+ "snapshot_date": "2026-10-05",
+ "source": "DEMO: invented entries for the ChainCheck demo. NOT MAS data.",
+ "entries": [
+  {
+   "name": "QuantEdge AI",
+   "websites": [
+    "quantedge-ai.example"
+   ]
+  },
+  {
+   "name": "AlphaGain Pro",
+   "websites": [
+    "alphagain-pro.example"
+   ]
+  },
+  {
+   "name": "Orchid Prime Markets",
+   "websites": [
+    "orchidprime.example"
+   ]
+  },
+  {
+   "name": "Zenith Bull Capital",
+   "websites": [
+    "zenithbull.example"
+   ]
+  }
+ ]
 }

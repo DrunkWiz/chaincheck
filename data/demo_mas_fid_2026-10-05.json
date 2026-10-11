@@ -1,16 +1,149 @@
 {
-  "snapshot_date": "2026-10-05",
-  "source": "DEMO: invented firms for the ChainCheck demo. NOT MAS data. Replace with a real snapshot via scripts/snapshot_mas.py.",
-  "institutions": [
-    {"name": "Harbourview Securities Pte. Ltd.", "licence": "Capital Markets Services Licence",
-     "websites": ["harbourview-securities.example"], "phones": ["+6560000101"], "email_domains": ["harbourview-securities.example"]},
-    {"name": "Merlion Crest Capital Pte. Ltd.", "licence": "Capital Markets Services Licence",
-     "websites": ["merlioncrestcapital.example"], "phones": ["+6560000202"], "email_domains": ["merlioncrestcapital.example"]},
-    {"name": "Kallang Wealth Partners Pte. Ltd.", "licence": "Financial Adviser's Licence",
-     "websites": ["kallangwealth.example"], "phones": ["+6560000303"], "email_domains": ["kallangwealth.example"]},
-    {"name": "Straits Harbour Bank Limited", "licence": "Full Bank",
-     "websites": ["straitsharbourbank.example"], "phones": ["+6560000404"], "email_domains": ["straitsharbourbank.example"]},
-    {"name": "Tanjong Robo Invest Pte. Ltd.", "licence": "Capital Markets Services Licence",
-     "websites": ["tanjongrobo.example"], "phones": ["+6560000505"], "email_domains": ["tanjongrobo.example"]}
-  ]
+ "snapshot_date": "2026-10-05",
+ "source": "DEMO: invented firms for the ChainCheck demo. NOT MAS data. Replace with a real snapshot via scripts/snapshot_mas.py.",
+ "institutions": [
+  {
+   "name": "Harbourview Securities Pte. Ltd.",
+   "licence": "Capital Markets Services Licence",
+   "websites": [
+    "harbourview-securities.example"
+   ],
+   "phones": [
+    "+6560000101"
+   ],
+   "email_domains": [
+    "harbourview-securities.example"
+   ]
+  },
+  {
+   "name": "Merlion Crest Capital Pte. Ltd.",
+   "licence": "Capital Markets Services Licence",
+   "websites": [
+    "merlioncrestcapital.example"
+   ],
+   "phones": [
+    "+6560000202"
+   ],
+   "email_domains": [
+    "merlioncrestcapital.example"
+   ]
+  },
+  {
+   "name": "Kallang Wealth Partners Pte. Ltd.",
+   "licence": "Financial Adviser's Licence",
+   "websites": [
+    "kallangwealth.example"
+   ],
+   "phones": [
+    "+6560000303"
+   ],
+   "email_domains": [
+    "kallangwealth.example"
+   ]
+  },
+  {
+   "name": "Straits Harbour Bank Limited",
+   "licence": "Full Bank",
+   "websites": [
+    "straitsharbourbank.example"
+   ],
+   "phones": [
+    "+6560000404"
+   ],
+   "email_domains": [
+    "straitsharbourbank.example"
+   ]
+  },
+  {
+   "name": "Tanjong Robo Invest Pte. Ltd.",
+   "licence": "Capital Markets Services Licence",
+   "websites": [
+    "tanjongrobo.example"
+   ],
+   "phones": [
+    "+6560000505"
+   ],
+   "email_domains": [
+    "tanjongrobo.example"
+   ]
+  },
+  {
+   "name": "Bukit Timah Asset Management Pte. Ltd.",
+   "licence": "Capital Markets Services Licence",
+   "websites": [
+    "btam.example"
+   ],
+   "phones": [
+    "+6560000606"
+   ],
+   "email_domains": [
+    "btam.example"
+   ]
+  },
+  {
+   "name": "Changi Life Assurance Limited",
+   "licence": "Direct Life Insurer",
+   "websites": [
+    "changilife.example"
+   ],
+   "phones": [
+    "+6560000707"
+   ],
+   "email_domains": [
+    "changilife.example"
+   ]
+  },
+  {
+   "name": "Serangoon Digital Bank Limited",
+   "licence": "Digital Full Bank",
+   "websites": [
+    "serangoondigital.example"
+   ],
+   "phones": [
+    "+6560000808"
+   ],
+   "email_domains": [
+    "serangoondigital.example"
+   ]
+  },
+  {
+   "name": "Pasir Futures Pte. Ltd.",
+   "licence": "Capital Markets Services Licence",
+   "websites": [
+    "pasirfutures.example"
+   ],
+   "phones": [
+    "+6560000909"
+   ],
+   "email_domains": [
+    "pasirfutures.example"
+   ]
+  },
+  {
+   "name": "Rochor REIT Management Pte. Ltd.",
+   "licence": "Capital Markets Services Licence",
+   "websites": [
+    "rochorreit.example"
+   ],
+   "phones": [
+    "+6560001010"
+   ],
+   "email_domains": [
+    "rochorreit.example"
+   ]
+  },
+  {
+   "name": "Marina Bay Brokerage Pte. Ltd.",
+   "licence": "Capital Markets Services Licence",
+   "websites": [
+    "mbbrokerage.example"
+   ],
+   "phones": [
+    "+6560001111"
+   ],
+   "email_domains": [
+    "mbbrokerage.example"
+   ]
+  }
+ ]
 }

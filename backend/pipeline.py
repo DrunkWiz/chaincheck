@@ -6,6 +6,7 @@ provider fails, the check still runs on code-side extraction alone and the
 result says so.
 """
 
+import sys
 from dataclasses import dataclass, field
 from datetime import date
 
@@ -70,9 +71,15 @@ def analyze(offer_text, provider, ctx=None, answers=None):
     model_entities = schema.empty_entities()
     if provider is not None and text:
         try:
-            model_entities = cached_extract(for_model(text), provider).entities
-        except ProviderError:
+            extracted = cached_extract(for_model(text), provider)
+            model_entities = extracted.entities
+            if extracted.discarded:
+                # Field names and reasons only, never message content.
+                print(f"ChainCheck: model output had {len(extracted.discarded)} invalid part(s): "
+                      f"{'; '.join(extracted.discarded[:5])}", file=sys.stderr)
+        except ProviderError as exc:
             degraded = True
+            print(f"ChainCheck: AI reader unavailable, using fixed rules only: {exc}", file=sys.stderr)
 
     entities = code_extract.merge(model_entities, code_entities)
     answers = followups.clean_answers(answers or {})
