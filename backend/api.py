@@ -118,7 +118,9 @@ class App:
         report_id = community.submit(
             self.db, data.get("story"), data.get("outcome"), data.get("scam_type"),
             data.get("confirmations") or {}, self.provider_factory(), self.context(False), self.secret)
-        return {"id": report_id, "status": "pending"}
+        # Why a report was held stays with moderators, so nobody can tune a story to get past the screen.
+        published = community.status_of(self.db, report_id) == "approved"
+        return {"id": report_id, "status": "published" if published else "pending"}
 
     def helped(self, report_id, **_):
         community.mark_helped(self.db, report_id)
@@ -126,7 +128,7 @@ class App:
 
     def admin_pending(self, headers, **_):
         self._require_admin(headers)
-        return {"reports": community.pending(self.db)}
+        return {"reports": community.pending(self.db), "published": community.auto_published(self.db)}
 
     def admin_review(self, headers, report_id, action, **_):
         self._require_admin(headers)

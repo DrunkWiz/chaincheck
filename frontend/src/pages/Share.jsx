@@ -44,8 +44,8 @@ export default function Share() {
     setBusy(true);
     setError("");
     try {
-      await api.submit({ story, outcome, scam_type: scamType, confirmations: confirm });
-      setSent(true);
+      const result = await api.submit({ story, outcome, scam_type: scamType, confirmations: confirm });
+      setSent(result.status === "published" ? "published" : "pending");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -57,8 +57,17 @@ export default function Share() {
     return (
       <section ref={successRef} tabIndex={-1} className="story-success">
         <div className="wrap wide">
-          <PageHeading eyebrow="Story submitted" title="Thank you. Your story is in the review queue." icon="check"/>
-          <p>Someone will check it before it's published. You don't need to do anything else.</p>
+          {sent === "published" ? (
+            <>
+              <PageHeading eyebrow="Story published" title="Thank you. Your story is now on the community page." icon="check"/>
+              <p>It passed our automatic checks. Moderators can still take it down if something's wrong.</p>
+            </>
+          ) : (
+            <>
+              <PageHeading eyebrow="Story submitted" title="Thank you. Your story is waiting for review." icon="check"/>
+              <p>A person will check it before it's published. You don't need to do anything else.</p>
+            </>
+          )}
           <p>If you've lost money, also report it on ScamShield and to the police, and call your bank.</p>
           <div className="btn-row">
             <a className="btn stop" href="https://www.scamshield.gov.sg/" target="_blank" rel="noreferrer">Report on ScamShield ↗</a>
@@ -74,12 +83,12 @@ export default function Share() {
     <section>
       <div className="wrap wide">
         <PageHeading eyebrow="Share your story" title="Tell others what happened" icon="text">
-          Your experience could help someone pause before paying. Preview your story and check what will be shared before sending it for review.
+          Your experience could help someone pause before paying. Preview your story and check what will be shared before you send it.
         </PageHeading>
         <div className="form-progress" aria-label="Story submission steps">
           <span className={!preview ? "current" : ""} aria-current={!preview ? "step" : undefined}><b>1</b> Your story</span>
           <span className={preview ? "current" : ""} aria-current={preview ? "step" : undefined}><b>2</b> Review personal details</span>
-          <span><b>3</b> Send for review</span>
+          <span><b>3</b> Send</span>
         </div>
         <div className="share-layout"><div className="share-content">
         <form onSubmit={makePreview} className="card share-form">
@@ -117,7 +126,7 @@ export default function Share() {
         {preview && (
           <div className="card story-preview" ref={previewRef} tabIndex={-1}>
             <h2>Preview</h2>
-            <p className="small muted">This is exactly what reviewers and readers will see.</p>
+            <p className="small muted">This is exactly what readers will see.</p>
             <pre className="evidence">{preview.redacted}</pre>
             <p>
               {removed.length
@@ -143,7 +152,7 @@ export default function Share() {
             </label>
             <button type="button" className="btn" onClick={send}
               disabled={busy || !confirm.redaction || !confirm.truthful || !outcome || !scamType}>
-              {busy ? "Sending…" : "Send for review"}
+              {busy ? "Sending…" : "Send my story"}
             </button>
             {(!outcome || !scamType) && <p className="small muted">Choose how it ended and the type of scam above.</p>}
           </div>
@@ -154,7 +163,7 @@ export default function Share() {
           <ol className="steps">
             <li>Write what happened. No account needed.</li>
             <li>We remove names, phone numbers, NRIC/FIN, bank account numbers and emails before storing your story.</li>
-            <li>Check the preview yourself. Every submitted story is reviewed before publication.</li>
+            <li>Check the preview yourself. An automatic screen, including Google's Gemini AI, then reads the redacted story. If anything looks wrong, a person reviews it before it's published.</li>
           </ol>
         </aside></div>
       </div>

@@ -1,16 +1,17 @@
 """Community reports and the scam network (docs/BUILD_BRIEF.md §10).
 
 Every story runs through the checker so its entities are already extracted,
-is redacted before storage, and waits in a review queue. Approving a report
-recomputes the network: union-find over shared entities.
+and is redacted before storage. Code then publishes it, or holds it in the
+review queue when code or the AI screen gives a reason (backend/moderation.py).
+Publishing a report recomputes the network: union-find over shared entities.
 """
 
 import json
 import secrets
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
-from backend import config, normalize, redact
+from backend import config, moderation, normalize, redact
 from backend.checks import network
 from backend.pipeline import analyze
 
@@ -76,7 +77,8 @@ def preview(story, provider, ctx, secret=None):
 
 
 def submit(db, story, outcome, scam_type, confirmations, provider, ctx, secret=None, synthetic=False,
-           status="pending", report_id=None):
+           status=None, report_id=None):
+    """Store a report and return its id. With no `status`, code decides: published, or held for a person."""
     if outcome not in config.OUTCOMES:
         raise ReportError("Choose how it ended.")
     if scam_type not in config.SCAM_TYPES:
@@ -84,14 +86,23 @@ def submit(db, story, outcome, scam_type, confirmations, provider, ctx, secret=N
     if not synthetic and not (confirmations.get("redaction") and confirmations.get("truthful")):
         raise ReportError("Please confirm both statements before sending.")
     result, redacted, _, signals = _check_story(story, provider, ctx)
+    linkable, licensed = _split_licensed(result.entities, ctx, secret)
+    held = []
+    if status is None:
+        held = moderation.hold_reasons(
+            redacted, {f.rule for f in result.flags}, [d for _, _, d in licensed],
+            duplicate=bool(db.execute("SELECT 1 FROM reports WHERE story = ? LIMIT 1", (redacted,))),
+            published_last_hour=_auto_published_since(db, datetime.now(timezone.utc) - timedelta(hours=1)),
+            provider=provider)
+        status = "pending" if held else "approved"
     report_id = report_id or secrets.token_hex(8)
     statements = [(
-        "INSERT OR IGNORE INTO reports (id, story, outcome, scam_type, verdict, signals, status, synthetic, created_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT OR IGNORE INTO reports (id, story, outcome, scam_type, verdict, signals, status, synthetic, "
+        "created_at, held_reasons, auto_published) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (report_id, redacted, outcome, scam_type, result.verdict, json.dumps(signals), status,
-         int(synthetic), _now()),
+         int(synthetic), _now(), json.dumps(held), int(status == "approved" and not synthetic)),
     )]
-    for kind, key, display in _linkable(result.entities, ctx, secret):
+    for kind, key, display in linkable:
         statements.append((
             "INSERT INTO entities (kind, value, display) VALUES (?, ?, ?) ON CONFLICT (kind, value) DO NOTHING",
             (kind, key, display)))
@@ -105,21 +116,51 @@ def submit(db, story, outcome, scam_type, confirmations, provider, ctx, secret=N
     return report_id
 
 
-def _linkable(entities, ctx, secret):
-    """Entity keys that may link reports: never a licensed firm's name, site or phone."""
+def _split_licensed(entities, ctx, secret):
+    """(keys that may link reports, keys that belong to a MAS-licensed firm's name, site or phone).
+    Reports never link a licensed firm."""
     licensed = network.licensed_keys(ctx.fid)
     keys = network.entity_keys(entities, secret)
     licensed_phones = ({normalize.keyed_hash(p, secret) for f in ctx.fid.firms for p in f.phones}
                        if any(k == "phone_hash" for k, _, _ in keys) else set())
-    return [(k, v, d) for k, v, d in keys
-            if (k, v) not in licensed and not (k == "phone_hash" and v in licensed_phones)]
+    linkable, firm = [], []
+    for k, v, d in keys:
+        is_licensed = (k, v) in licensed or (k == "phone_hash" and v in licensed_phones)
+        (firm if is_licensed else linkable).append((k, v, "A licensed firm's phone number" if k == "phone_hash" else d))
+    return linkable, firm
+
+
+def _linkable(entities, ctx, secret):
+    return _split_licensed(entities, ctx, secret)[0]
+
+
+def _auto_published_since(db, since):
+    rows = db.execute("SELECT COUNT(*) AS n FROM reports WHERE auto_published = 1 AND created_at >= ?",
+                      (since.isoformat(timespec="seconds"),))
+    return rows[0]["n"]
 
 
 # --- Review queue -----------------------------------------------------------------
 
 def pending(db):
+    """Reports held for a person, with the reasons they were held. Moderators only."""
     rows = db.execute("SELECT * FROM reports WHERE status = 'pending' ORDER BY created_at")
-    return [_public(r, _entities_for(db, [r["id"]]).get(r["id"], []), None) for r in rows]
+    entities = _entities_for(db, [r["id"] for r in rows])
+    return [{**_public(r, entities.get(r["id"], []), None), "held": json.loads(r["held_reasons"])}
+            for r in rows]
+
+
+def auto_published(db, limit=50):
+    """Reports code published without a person, newest first, so a moderator can take one down."""
+    rows = db.execute("SELECT * FROM reports WHERE status = 'approved' AND auto_published = 1 "
+                      "ORDER BY created_at DESC LIMIT ?", (limit,))
+    entities = _entities_for(db, [r["id"] for r in rows])
+    return [_public(r, entities.get(r["id"], []), None) for r in rows]
+
+
+def status_of(db, report_id):
+    rows = db.execute("SELECT status FROM reports WHERE id = ?", (report_id,))
+    return rows[0]["status"] if rows else None
 
 
 def review(db, report_id, approve):

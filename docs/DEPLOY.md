@@ -17,6 +17,27 @@ One Python web service builds the front end and serves it with the API (`backend
 | `PHONE_HMAC_SECRET` | add in **Environment**, use **Generate** |
 | `ADMIN_TOKEN` | add in **Environment**, use **Generate**, keep a copy for `/#/admin` |
 | `GEMINI_API_KEY` | add in **Environment**: your free Google AI Studio key |
+| `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` | optional, keeps shared stories (below) |
+
+### Keep shared stories: Turso in the browser, no CLI
+
+1. Sign up at https://app.turso.tech (the free plan is enough; signing in with GitHub is quickest).
+2. Create a database named `chaincheck`. Pick the location closest to Singapore that's offered.
+3. On the database's page, copy its URL (it starts with `libsql://`). That's `TURSO_DATABASE_URL`.
+4. On the same page, create a token with read and write access and no expiry. Copy it straight into
+   Render; it's `TURSO_AUTH_TOKEN`. Don't paste it into chat or git.
+5. Render → `chaincheck` → **Environment**: add both variables and save. Saving redeploys.
+
+On the first start the app creates its tables and adds the 12 synthetic reports. After that,
+stories survive sleeps and redeploys. Keep `PHONE_HMAC_SECRET` unchanged from then on.
+
+### Reports are screened automatically
+
+A shared story is published straight away when code finds no reason to hold it (instructions aimed
+at AI, a MAS-licensed firm named, a repeat, more than 10 auto-published in the hour) **and** the
+Gemini screen raises no concern. Otherwise it waits in `/#/admin`, with the reasons. Without
+`GEMINI_API_KEY`, or when Gemini fails, every story waits. `/#/admin` also lists auto-published
+stories so you can take one down.
 
 Saving environment variables redeploys the service.
 
@@ -158,7 +179,8 @@ Then in a browser:
       connected and seeded.
 - [ ] Add a screenshot of an invented offer. Its text appears in the box within a few seconds; check it.
 - [ ] Community page shows 12 synthetic reports and a 9-report network alert.
-- [ ] Share a test story. It shows up in `/#/admin` with your `ADMIN_TOKEN`. Reject it.
+- [ ] Share an invented test story. It's published, or held with a reason; either way it shows in
+      `/#/admin` with your `ADMIN_TOKEN`. Take it down or reject it.
 - [ ] Phone width (375px): no sideways scrolling on any page.
 
 ## 6. Troubleshooting

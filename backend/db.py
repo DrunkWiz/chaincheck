@@ -26,7 +26,9 @@ SCHEMA = (
         synthetic INTEGER NOT NULL DEFAULT 0,
         helped INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL,
-        reviewed_at TEXT
+        reviewed_at TEXT,
+        held_reasons TEXT NOT NULL DEFAULT '[]',
+        auto_published INTEGER NOT NULL DEFAULT 0
     )""",
     """CREATE TABLE IF NOT EXISTS entities (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,6 +49,13 @@ SCHEMA = (
     )""",
     "CREATE INDEX IF NOT EXISTS reports_status ON reports(status)",
     "CREATE INDEX IF NOT EXISTS report_entities_entity ON report_entities(entity_id)",
+)
+
+# Columns added after the first deploy. A database made before them gets them here;
+# on a newer one the column already exists and the statement fails harmlessly.
+MIGRATIONS = (
+    "ALTER TABLE reports ADD COLUMN held_reasons TEXT NOT NULL DEFAULT '[]'",
+    "ALTER TABLE reports ADD COLUMN auto_published INTEGER NOT NULL DEFAULT 0",
 )
 
 
@@ -160,6 +169,11 @@ def _value(cell):
 def init(db):
     for statement in SCHEMA:
         db.execute(statement)
+    for statement in MIGRATIONS:
+        try:
+            db.execute(statement)
+        except DatabaseError:
+            pass  # column already there
     return db
 
 

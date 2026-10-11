@@ -231,7 +231,8 @@ Normalise domains (lower-case, strip `www`), company names (as §7), phones
 - Phone numbers are never displayed, only "matches N reports" (scammers spoof
   real people's numbers).
 - Links shown defanged: `alphagain-pro[.]com`.
-- Every report goes through an admin review queue before it's public.
+- Every report is screened before it's public: code checks, then a model screen that can only
+  hold a report back. Held reports wait in the admin review queue (changed 11 Oct, see §21).
 - One report can never flag a MAS-licensed firm. That needs several independent
   reports **and** a copycat mismatch, and reads "copycat of", never "scam".
 - Report text goes through the same injection guard.
@@ -446,3 +447,9 @@ Needs Nathan:
 - **Real MAS lists:** not used. MAS's terms forbid republishing site content without written
   permission, and neither list is published as an open dataset or API. The demo keeps invented,
   labelled data; a permission request to MAS is drafted in `submission/` (local only).
+- **Report moderation (§10):** automatic, same rule as the checker. Code publishes a story only when
+  its own checks find nothing (instructions aimed at AI, a MAS-licensed firm's name/site/phone, a
+  repeat story, more than `AUTO_PUBLISH_MAX_PER_HOUR` already auto-published) and the Gemini screen
+  (`backend/moderation.py`) ran and raised no concern. The screen sees only the redacted story; a
+  failed or malformed screen holds the story. Held stories wait in `/#/admin` with reasons, which the
+  reporter never sees; moderators can also take down auto-published stories.

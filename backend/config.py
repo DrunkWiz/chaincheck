@@ -65,6 +65,10 @@ SCAM_TYPES = (
 )
 OUTCOMES = ("lost_money", "stopped_in_time", "still_happening", "recovered_some")
 MAX_REPORT_CHARS = 8000
+# Reports are published automatically when code and the AI screen find no reason to hold them
+# (backend/moderation.py). Past this many in an hour, the rest wait for a person: a brake on floods.
+AUTO_PUBLISH_MAX_PER_HOUR = 10
+SCREEN_QUOTE_CHARS = 200  # longest quote from the AI screen shown to moderators
 
 # --- Request limits -------------------------------------------------------------
 MAX_TEXT_CHARS = 20_000

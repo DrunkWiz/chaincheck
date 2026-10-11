@@ -53,10 +53,14 @@ def neutralise(text):
     return _ANGLE_RUN.sub(lambda m: " ".join(m.group(0)), text)
 
 
+def wrap_untrusted(text):
+    """Untrusted text between the markers, ready to send as the user prompt."""
+    return f"{BEGIN_MARKER}\n{neutralise(text)}\n{END_MARKER}"
+
+
 def build_extraction_prompt(offer_text):
     """Return (system, user) prompts for one offer."""
-    user = f"{BEGIN_MARKER}\n{neutralise(offer_text)}\n{END_MARKER}"
-    return SYSTEM_PROMPT, user
+    return SYSTEM_PROMPT, wrap_untrusted(offer_text)
 
 
 def unwrap(user_prompt):
