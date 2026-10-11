@@ -1,4 +1,5 @@
-import { useState } from "react";
+import PageHeading from "../components/PageHeading.jsx";
+import { useEffect, useRef, useState } from "react";
 import { api, OUTCOME_LABELS, SCAM_TYPE_LABELS } from "../api.js";
 
 const REMOVED_LABELS = {
@@ -7,6 +8,8 @@ const REMOVED_LABELS = {
 };
 
 export default function Share() {
+  const previewRef = useRef(null);
+  const successRef = useRef(null);
   const [story, setStory] = useState("");
   const [outcome, setOutcome] = useState("");
   const [scamType, setScamType] = useState("");
@@ -15,6 +18,13 @@ export default function Share() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    const target = sent ? successRef.current : preview ? previewRef.current : null;
+    if (!target) return;
+    target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    target.focus({ preventScroll: true });
+  }, [preview, sent]);
 
   async function makePreview(e) {
     e.preventDefault();
@@ -45,9 +55,9 @@ export default function Share() {
 
   if (sent) {
     return (
-      <section>
-        <div className="wrap">
-          <h1>Thank you. Your story is in the review queue.</h1>
+      <section ref={successRef} tabIndex={-1} className="story-success">
+        <div className="wrap wide">
+          <PageHeading eyebrow="Story submitted" title="Thank you. Your story is in the review queue." icon="check"/>
           <p>Someone will check it before it's published. You don't need to do anything else.</p>
           <p>If you've lost money, also report it on ScamShield and to the police, and call your bank.</p>
           <div className="btn-row">
@@ -62,14 +72,17 @@ export default function Share() {
   const removed = preview ? Object.entries(preview.removed) : [];
   return (
     <section>
-      <div className="wrap">
-        <p className="eyebrow">Share your story</p>
-        <h1>Tell others what happened</h1>
-        <p className="muted">
-          No account needed. We remove names, phone numbers, NRIC/FIN, bank account numbers and emails before
-          anything is stored, and every story is reviewed before it's published.
-        </p>
-        <form onSubmit={makePreview} className="card">
+      <div className="wrap wide">
+        <PageHeading eyebrow="Share your story" title="Tell others what happened" icon="text">
+          Your experience could help someone pause before paying. Preview your story and check what will be shared before sending it for review.
+        </PageHeading>
+        <div className="form-progress" aria-label="Story submission steps">
+          <span className={!preview ? "current" : ""} aria-current={!preview ? "step" : undefined}><b>1</b> Your story</span>
+          <span className={preview ? "current" : ""} aria-current={preview ? "step" : undefined}><b>2</b> Review personal details</span>
+          <span><b>3</b> Send for review</span>
+        </div>
+        <div className="share-layout"><div className="share-content">
+        <form onSubmit={makePreview} className="card share-form">
           <label className="field" htmlFor="story">What happened?</label>
           <textarea id="story" value={story} maxLength={8000} onChange={(e) => { setStory(e.target.value); setPreview(null); }}
             placeholder="How they found you, the company or app name, websites, how they asked you to pay, what happened when you tried to withdraw." />
@@ -102,7 +115,7 @@ export default function Share() {
         {error && <p className="error" role="alert" style={{ marginTop: 14 }}>{error}</p>}
 
         {preview && (
-          <div className="card" style={{ marginTop: 18 }}>
+          <div className="card story-preview" ref={previewRef} tabIndex={-1}>
             <h2>Preview</h2>
             <p className="small muted">This is exactly what reviewers and readers will see.</p>
             <pre className="evidence">{preview.redacted}</pre>
@@ -135,6 +148,15 @@ export default function Share() {
             {(!outcome || !scamType) && <p className="small muted">Choose how it ended and the type of scam above.</p>}
           </div>
         )}
+        </div><aside className="card share-aside">
+          <p className="eyebrow">You stay in control</p>
+          <h2>Review before you share.</h2>
+          <ol className="steps">
+            <li>Write what happened. No account needed.</li>
+            <li>We remove names, phone numbers, NRIC/FIN, bank account numbers and emails before storing your story.</li>
+            <li>Check the preview yourself. Every submitted story is reviewed before publication.</li>
+          </ol>
+        </aside></div>
       </div>
     </section>
   );

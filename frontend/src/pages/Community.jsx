@@ -1,3 +1,4 @@
+import PageHeading from "../components/PageHeading.jsx";
 import { useEffect, useRef, useState } from "react";
 import { api, OUTCOME_LABELS, SCAM_TYPE_LABELS } from "../api.js";
 
@@ -12,7 +13,7 @@ function ReportCard({ report }) {
       <div className="meta">
         <span className="tag">{SCAM_TYPE_LABELS[report.scam_type] || report.scam_type}</span>
         <span className="tag">{OUTCOME_LABELS[report.outcome] || report.outcome}</span>
-        {report.verdict === "STOP" && <span className="tag" style={{ background: "#FBECEB", color: "#A3241A" }}>✕ Checker said STOP</span>}
+        {report.verdict === "STOP" && <span className="tag danger">✕ Checker said STOP</span>}
         {report.synthetic && <span className="tag synthetic">SYNTHETIC demo report</span>}
       </div>
       <p className={`story${expanded ? "" : " clamped"}`}>{report.story}</p>
@@ -34,7 +35,7 @@ function ReportCard({ report }) {
         </>
       )}
       {report.network_size > 1 && (
-        <p className="small" style={{ color: "#A3241A", fontWeight: 700 }}>
+        <p className="small network-note">
           Linked to {report.network_size - 1} other {report.network_size === 2 ? "report" : "reports"} by shared details.
         </p>
       )}
@@ -73,11 +74,9 @@ export default function Community({ meta }) {
   return (
     <section>
       <div className="wrap wide">
-        <p className="eyebrow">Community reports</p>
-        <h1>What happened to others</h1>
-        <p className="muted">
+        <PageHeading eyebrow="Community reports" title="What happened to others" icon="network">
           {meta?.demo ? "Explore invented reports that demonstrate how shared details link scam patterns." : "Explore reviewed reports of what went wrong, with personal details removed."} Search for a website, app, company or wallet you've been sent.
-        </p>
+        </PageHeading>
         <form className="btn-row" role="search" onSubmit={(e) => { e.preventDefault(); load(); }}>
           <label className="sr-only" htmlFor="search">Search reports</label>
           <input id="search" type="search" value={query} onChange={(e) => setQuery(e.target.value)}

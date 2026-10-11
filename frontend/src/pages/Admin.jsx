@@ -1,3 +1,4 @@
+import PageHeading from "../components/PageHeading.jsx";
 import { useState } from "react";
 import { api, OUTCOME_LABELS, SCAM_TYPE_LABELS } from "../api.js";
 
@@ -39,7 +40,7 @@ export default function Admin() {
   return (
     <section>
       <div className="wrap">
-        <h1>Review queue</h1>
+        <PageHeading eyebrow="Moderation" title="Review queue">Review personal details and evidence before publishing a story.</PageHeading>
         <form className="btn-row" onSubmit={load}>
           <label className="sr-only" htmlFor="token">Admin token</label>
           <input id="token" type="password" value={token} onChange={(e) => setToken(e.target.value)}

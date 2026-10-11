@@ -1,3 +1,4 @@
+import PageHeading from "../components/PageHeading.jsx";
 const MOVES = [
   {
     title: "The hook",
@@ -43,13 +44,11 @@ export default function Learn() {
   return (
     <section>
       <div className="wrap wide">
-        <p className="eyebrow">Learn the signs</p>
-        <h1>How investment scams work</h1>
-        <p className="muted">
+        <PageHeading eyebrow="Learn the signs" title="How investment scams work" icon="book">
           They follow the same playbook. Once you know the moves, you can spot which one you're in.
-        </p>
-
-        <div className="card" style={{ marginBottom: 28 }}>
+        </PageHeading>
+        <div className="card learn-feature">
+          <p className="eyebrow">Watch the investigation</p>
           <h2>Watch: how people who checked still got caught</h2>
           <p>
             CNA's investigation follows people who did their research: one Googled the contract, another ran
@@ -64,6 +63,7 @@ export default function Learn() {
         </div>
 
         <h2>The four moves</h2>
+        <div className="stack">
         {MOVES.map((m, i) => (
           <div className="move card" key={m.title}>
             <div className="phone-mock" aria-label={`Mock chat: ${m.title}`}>
@@ -73,18 +73,23 @@ export default function Learn() {
               ))}
             </div>
             <div>
-              <h3>{i + 1}. {m.title}</h3>
+              <p className="eyebrow">Move {String(i + 1).padStart(2, "0")} of 04</p>
+              <h3>{m.title}</h3>
               <div className="tell"><strong>The tell:</strong> {m.tell}</div>
             </div>
           </div>
         ))}
 
-        <h2 style={{ marginTop: 32 }}>Also watch for</h2>
+        </div>
+        <div className="learning-section">
+        <h2>Also watch for</h2>
         <div className="grid">
           {ALSO.map(([t, d]) => <div className="card" key={t}><h3>{t}</h3><p>{d}</p></div>)}
         </div>
 
-        <h2 style={{ marginTop: 32 }}>How a check works</h2>
+        </div>
+        <div className="panel learning-section">
+        <h2>How a check works</h2>
         <ol className="steps">
           <li>An AI reads your text or screenshots and lists the names, links, numbers and payment requests. That's all it does.</li>
           <li>Fixed rules check each one: MAS's licence and alert lists, whether the contact details match the real firm, how old the website is, what the promised return works out to in a year, and how they want you to pay.</li>
@@ -92,6 +97,7 @@ export default function Learn() {
           <li>We never say an offer is safe. The best result is "No red flags found. Verify these yourself before you pay."</li>
         </ol>
         <a className="btn" href="#/">Check an offer</a>
+        </div>
       </div>
     </section>
   );

@@ -4,7 +4,7 @@ export default function FollowUps({ questions, onAnswer, busy }) {
   const [company, setCompany] = useState("");
   if (!questions?.length) return null;
   return (
-    <div className="panel" style={{ borderColor: "#0F5A4D", borderWidth: 2 }}>
+    <div className="panel followup-panel">
       <h2>A few questions to finish the check</h2>
       <p className="muted small">The offer didn't say. Your answers are only used for this check.</p>
       {questions.map((q) => (

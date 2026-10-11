@@ -332,8 +332,9 @@ hasn't chosen to share.
 
 ## 15. Pages (from the design canvas)
 
-Fonts: Atkinson Hyperlegible (body), Bricolage Grotesque (headings). Ground
-`#F7F8F6`, ink `#16211D`, accent `#0F5A4D`, stop red `#A3241A`, amber
+Typography updated 11 Oct after the merged UI review: locally bundled Atkinson
+Hyperlegible for headings, body and controls, with one shared type scale. Ground
+`#F5F6F2`, ink `#172C27`, accent `#245E4B`, stop red `#A3241A`, amber
 `#B45309` / text `#7A4206`. Body text ≥ 18px, tap targets ≥ 48px, one column on
 phones. Status is always text plus colour, never colour alone.
 
