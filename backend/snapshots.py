@@ -41,6 +41,12 @@ class Snapshot:
         prefix = "DEMO data, invented firms, not " if self.demo else ""
         return f"{prefix}{name} snapshot, {self.date}"
 
+    @property
+    def invented(self):
+        """The demo list of invented firms. Real firms aren't in it, so code mustn't say a firm
+        missing from it is unlicensed. (Test fixtures behave like a real snapshot.)"""
+        return self.source.upper().startswith("DEMO")
+
 
 def parse(raw, kind, demo=False):
     records = raw.get("institutions") if kind == "fid" else raw.get("entries")

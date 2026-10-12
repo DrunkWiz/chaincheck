@@ -447,6 +447,9 @@ Needs Nathan:
 - **Real MAS lists:** not used. MAS's terms forbid republishing site content without written
   permission, and neither list is published as an open dataset or API. The demo keeps invented,
   labelled data; a permission request to MAS is drafted in `submission/` (local only).
+- **Firms missing from the invented demo list (§7, 12 Oct):** amber `mas.not_on_demo_list`, not red
+  "not licensed by MAS": real firms aren't in the demo data, and we never call a real firm
+  unlicensed. The verdict is still STOP. A real snapshot restores the red rule.
 - **Report moderation (§10):** automatic, same rule as the checker. Code publishes a story only when
   its own checks find nothing (instructions aimed at AI, a MAS-licensed firm's name/site/phone, a
   repeat story, more than `AUTO_PUBLISH_MAX_PER_HOUR` already auto-published) and the Gemini screen

@@ -365,3 +365,17 @@ def test_verify_items_reach_the_result_and_evidence():
     out = result.to_dict()
     assert out["verify_yourself"] and "Wendy Lim" in out["verify_yourself"][0]
     assert "Check these yourself:" in out["evidence_summary"]
+
+
+# --- Invented demo list: never call a real firm unlicensed -------------------------
+
+def test_firm_missing_from_invented_demo_list_is_amber_not_unlicensed():
+    from backend import snapshots, verdict
+    ctx = make_ctx()
+    demo = snapshots.load_latest("fid")
+    assert demo.invented and not ctx.fid.invented  # fixtures behave like a real snapshot
+    ctx.fid = demo
+    flags = mas.check(entities(companies=["Phillip Securities"]), ctx)
+    assert levels(flags) == {"mas.not_on_demo_list": "amber"}
+    assert "not licensed" not in flags[0].title + flags[0].detail
+    assert verdict.decide(flags)["verdict"] == verdict.STOP  # amber still means STOP
