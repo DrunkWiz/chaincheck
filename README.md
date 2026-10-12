@@ -15,7 +15,7 @@ Built for WarriorHacks 2.0. Full plan: [docs/BUILD_BRIEF.md](docs/BUILD_BRIEF.md
 |---|---|
 | Checks, verdict, playbook stage, Reality Check | Real code, fixed rules, tested |
 | MAS Financial Institutions Directory / Investor Alert List | **Demo data with invented firms** (`data/demo_mas_*.json`) until a real dated snapshot is added. The site shows a demo banner and every MAS flag says "DEMO data" |
-| Community reports | **Synthetic**: 12 invented reports (`backend/demo_seed.py`), labelled on screen |
+| Community reports | **Synthetic**: 12 invented reports (`backend/demo_seed.py`), labelled on screen. Stored in Turso on the live site. Shared stories are screened automatically (below) |
 | Example offers and mock chats | Invented, labelled MOCK |
 | Domain age | Live RDAP lookup via rdap.org when deployed; fixtures in tests |
 | Accuracy figure | Not yet measured on a real set: see [Accuracy](#accuracy) |
@@ -38,7 +38,7 @@ text ─▶ redact personal numbers ─▶ model extraction ─┐
 
 | Check | Rule (thresholds in `backend/config.py`) |
 |---|---|
-| MAS licence | Not in FID snapshot: red. On Investor Alert List: red |
+| MAS licence | Not in FID snapshot: red (with the invented demo list: amber "isn't on ChainCheck's demo firm list", so a real firm is never called unlicensed). On Investor Alert List: red |
 | Fuzzy name | ≥ 0.85 similar to a licensed name but not exact: red, looks like a copy |
 | Copycat | Licensed name but website/email/phone not on its MAS record: red. No contact details: amber |
 | Domain age | < 180 days red, < 365 days amber, lookup failed amber |
@@ -52,6 +52,11 @@ text ─▶ redact personal numbers ─▶ model extraction ─┐
 | Text aimed at AI | "Ignore your instructions…": red |
 | Community network | Entity in approved reports: red. Licensed firms are never flagged from reports alone |
 | AI concerns | Amber, labelled as AI, reason withheld if it tries to reassure |
+
+**Shared stories** follow the same rule. Code publishes a story only when its own checks find nothing
+(instructions aimed at AI, a MAS-licensed firm named, a repeat, more than 10 auto-published in an
+hour) **and** a Gemini screen of the redacted story raises no concern. The screen can only hold a
+story back; if it fails, the story waits for a moderator at `/#/admin`.
 
 ## Run it locally
 

@@ -137,3 +137,9 @@ def test_seeding_twice_adds_nothing(db):
     seed_reports.seed(db, make_ctx(), secret=SECRET)
     assert len(community.list_reports(db)) == 12
     assert seed_reports.seed_if_empty(db, make_ctx(), secret=SECRET) == 0
+
+
+def test_preview_labels_an_ordinary_phone_as_a_phone():
+    out = community.preview(STORY, None, make_ctx(), secret=SECRET)
+    phones = [e["display"] for e in out["entities"] if e["kind"] == "phone_hash"]
+    assert phones and not any("licensed" in d for d in phones)

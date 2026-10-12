@@ -56,6 +56,9 @@ SCHEMA = (
 MIGRATIONS = (
     "ALTER TABLE reports ADD COLUMN held_reasons TEXT NOT NULL DEFAULT '[]'",
     "ALTER TABLE reports ADD COLUMN auto_published INTEGER NOT NULL DEFAULT 0",
+    # 11 Oct bug: ordinary phones were stored with a licensed-firm label. Licensed phones are
+    # never stored, so every such row is wrong. Harmless to rerun.
+    "UPDATE entities SET display = 'A phone number' WHERE kind = 'phone_hash' AND display != 'A phone number'",
 )
 
 

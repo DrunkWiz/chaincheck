@@ -211,3 +211,10 @@ def test_public_listing_never_shows_held_reasons():
     post(app, "/api/reports", REPORT)
     _, public = app.handle("GET", "/api/reports")
     assert "held" not in public["reports"][0] and "held_reasons" not in public["reports"][0]
+
+
+def test_startup_repairs_phone_labels_stored_by_the_11_oct_bug():
+    db = database.init(database.SqliteDatabase())
+    db.execute("INSERT INTO entities (kind, value, display) VALUES ('phone_hash', 'abc', 'A licensed firm''s phone number')")
+    database.init(db)
+    assert db.execute("SELECT display FROM entities")[0]["display"] == "A phone number"

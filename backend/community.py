@@ -126,7 +126,10 @@ def _split_licensed(entities, ctx, secret):
     linkable, firm = [], []
     for k, v, d in keys:
         is_licensed = (k, v) in licensed or (k == "phone_hash" and v in licensed_phones)
-        (firm if is_licensed else linkable).append((k, v, "A licensed firm's phone number" if k == "phone_hash" else d))
+        if not is_licensed:
+            linkable.append((k, v, d))
+        else:
+            firm.append((k, v, "A licensed firm's phone number" if k == "phone_hash" else d))
     return linkable, firm
 
 
